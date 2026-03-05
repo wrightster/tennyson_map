@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cannady Mill Road - Blackwell Builders</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f5f1eb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .map-container {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 32px 40px 28px;
+    max-width: 1320px;
+    width: 95vw;
+  }
+
+  .map-header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .map-header h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: #3a4a2e;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .map-header h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    letter-spacing: 5px;
+    color: #7a8a6a;
+    text-transform: uppercase;
+  }
+
+  .map-header .divider {
+    width: 80px;
+    height: 2px;
+    background: #b5c5a0;
+    margin: 10px auto;
+  }
+
+  svg { display: block; width: 100%; height: auto; }
+
+  .map-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #e0ddd6;
+    font-size: 10px;
+    color: #999;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="map-container">
+  <div class="map-header">
+    <h2>Blackwell Builders presents</h2>
+    <h1>Cannady Mill Road</h1>
+    <div class="divider"></div>
+  </div>
+
+  <svg viewBox="-130 -20 1410 1020" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Lot fill gradient -->
+      <linearGradient id="lotGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ccd9b8"/>
+        <stop offset="100%" stop-color="#b8c9a0"/>
+      </linearGradient>
+
+      <!-- Tree gradient -->
+      <radialGradient id="treeGrad" cx="40%" cy="35%">
+        <stop offset="0%" stop-color="#a8c47a"/>
+        <stop offset="60%" stop-color="#7da34e"/>
+        <stop offset="100%" stop-color="#5a8030"/>
+      </radialGradient>
+      <radialGradient id="treeGradDark" cx="40%" cy="35%">
+        <stop offset="0%" stop-color="#8aad5e"/>
+        <stop offset="60%" stop-color="#6b8e3e"/>
+        <stop offset="100%" stop-color="#4a6d25"/>
+      </radialGradient>
+      <radialGradient id="treeGradLight" cx="40%" cy="35%">
+        <stop offset="0%" stop-color="#c4d89a"/>
+        <stop offset="60%" stop-color="#9dbe6e"/>
+        <stop offset="100%" stop-color="#78a348"/>
+      </radialGradient>
+
+      <!-- Drop shadow -->
+      <filter id="lotShadow" x="-2%" y="-2%" width="104%" height="104%">
+        <feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+      </filter>
+      <filter id="textBg" x="-5%" y="-5%" width="110%" height="110%">
+        <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#fff" flood-opacity="0.7"/>
+      </filter>
+
+      <!-- Water/pond gradient -->
+      <radialGradient id="pondGrad" cx="40%" cy="35%">
+        <stop offset="0%" stop-color="#b8d4e8"/>
+        <stop offset="60%" stop-color="#9cc2dc"/>
+        <stop offset="100%" stop-color="#85b5d2"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Background -->
+    <rect x="-130" y="-20" width="1410" height="1020" fill="#eae6dc" rx="3"/>
+
+    <!-- Surrounding area fill (light sage to suggest natural setting) -->
+    <rect x="-130" y="-20" width="1410" height="1020" fill="#ddd9ce" rx="3"/>
+
+    <!-- ============================================================ -->
+    <!-- CANNADY MILL ROAD - main road surface -->
+    <!-- ============================================================ -->
+    <!-- Road surface - wide stroke for the road area -->
+    <g opacity="0.95">
+      <!-- Upper section (Ridgewood intersection area) -->
+      <path d="M 1085.3 57.2 L 1066.7 107.2 L 1045.4 156.1 L 1029.5 187.2 L 1028.8 188.6 L 1028.2 190.1 L 1027.7 191.6 L 1027.3 193.1 L 1027.0 194.7 L 1026.7 196.2 L 1026.6 197.8 L 1026.6 199.4 L 1026.8 201.0 L 1027.0 202.6 L 1027.3 204.1 L 1027.7 205.6 L 1028.2 207.1 L 1028.9 208.6 L 1029.6 210.0 L 1030.4 211.4 L 1031.3 212.7 L 1032.3 213.9 L 1033.4 215.1 L 1034.5 216.2 L 1035.7 217.2 L 1037.0 218.2 L 1038.3 219.0 L 1184.6 305.0 L 1260 355"
+            stroke="#cac4b4" stroke-width="44" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Lower section -->
+      <path d="M 1260 417 L 1193.2 365.0 L 1011.1 258.1 L 1009.8 257.3 L 1008.3 256.6 L 1006.8 256.1 L 1005.3 255.6 L 1003.8 255.2 L 1002.2 255.0 L 1000.6 254.8 L 999.1 254.8 L 997.5 254.8 L 995.9 255.0 L 994.3 255.3 L 992.8 255.6 L 991.3 256.1 L 989.8 256.7 L 988.4 257.4 L 987.0 258.1 L 985.6 259.0 L 984.4 259.9 L 983.2 261.0 L 982.0 262.1 L 981.0 263.2 L 980.0 264.5 L 951.9 301.1 L 921.9 336.1 L 847.3 412.8 L 351.8 902.2 L 233.4 980"
+            stroke="#cac4b4" stroke-width="44" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Center line -->
+      <path d="M 1085.3 57.2 L 1066.7 107.2 L 1045.4 156.1 L 1029.5 187.2 L 1026.6 197.8 L 1027.0 202.6 L 1029.6 210.0 L 1033.4 215.1 L 1038.3 219.0 L 1184.6 305.0 L 1260 355"
+            stroke="#e8e3d8" stroke-width="2" fill="none" stroke-dasharray="12,8" opacity="0.7"/>
+      <path d="M 1260 417 L 1193.2 365.0 L 1011.1 258.1 L 1000.6 254.8 L 992.8 255.6 L 987.0 258.1 L 982.0 262.1 L 980.0 264.5 L 951.9 301.1 L 921.9 336.1 L 847.3 412.8 L 351.8 902.2 L 233.4 980"
+            stroke="#e8e3d8" stroke-width="2" fill="none" stroke-dasharray="12,8" opacity="0.7"/>
+    </g>
+
+    <!-- Ridgewood Drive stub -->
+    <path d="M 1031.4 38.8 L 1010.2 94.9" stroke="#cac4b4" stroke-width="36" fill="none" stroke-linecap="round"/>
+    <path d="M 1031.4 38.8 L 1010.2 94.9" stroke="#e8e3d8" stroke-width="1.5" fill="none" stroke-dasharray="8,6" opacity="0.6"/>
+
+    <!-- ============================================================ -->
+    <!-- POND (from GIS V-STREAM data) -->
+    <!-- ============================================================ -->
+    <polygon points="147.3,344.4 -17.3,230.8 -19.3,229.4 -21.5,228.3 -23.7,227.2 -26.0,226.4 -28.3,225.6 -30.7,225.1 -33.1,224.7 -35.6,224.5 -38.0,224.4 -40.5,224.5 -42.9,224.8 -45.3,225.2 -47.7,225.9 -50.0,226.6 -52.3,227.5 -54.5,228.6 -56.6,229.8 -58.6,231.2 -60.6,232.7 -62.4,234.3 -64.1,236.1 -65.7,238.0 -67.1,239.9 -68.4,242.0 -69.6,244.1 -70.6,246.3 -71.5,248.6 -72.2,251.0 -93.0,338.2 -108.9,426.4 -109.0,427.5 -109.1,428.6 -109.0,429.7 -108.9,430.8 -108.8,431.9 -108.5,432.9 -108.2,434.0 -107.8,435.0 -107.3,436.0 -106.8,437.0 -106.2,437.9 -105.5,438.8 -104.8,439.6 -104.0,440.4 -103.2,441.1 -102.3,441.8 -101.4,442.4 -100.5,443.0 -99.5,443.4 -98.4,443.8 -97.4,444.2 -96.3,444.4 -95.2,444.6 -94.1,444.7 -93.0,444.8 -91.9,444.7 -90.8,444.6 -89.7,444.4 -88.7,444.1 -87.6,443.8 -86.6,443.4 -85.6,442.9 -74.2,437.3 -62.5,432.4 -50.6,428.2 -38.4,424.7 -26.0,422.0 -13.5,419.9 27.3,415.9 68.2,414.3 109.2,415.2 144.8,418.0 180.1,422.9 181.6,423.1 183.1,423.2 184.5,423.2 186.0,423.1 187.5,422.9 188.9,422.5 190.3,422.1 191.7,421.6 193.0,421.1 194.3,420.4 195.6,419.6 196.8,418.8 197.9,417.8 199.0,416.8 200.0,415.8 200.9,414.6 201.7,413.4 202.5,412.2 203.2,410.9 203.8,409.5 204.3,408.1 204.6,406.7 204.9,405.3 205.1,403.9 205.2,402.4 205.2,401.0 205.1,399.5 204.9,398.1 204.6,396.7 204.2,395.3 203.7,393.9 203.2,392.6 202.5,391.3 201.7,390.0 200.9,388.8 200.0,387.7 194.2,381.6 188.1,375.8 181.7,370.3 174.9,365.3 147.3,344.4"
+             fill="url(#pondGrad)" stroke="#7aabbf" stroke-width="1.5" opacity="0.85"/>
+    <!-- Pond label -->
+    <text x="50" y="390" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="13" font-weight="500" fill="#4a7a90" letter-spacing="4" opacity="0.8">POND</text>
+
+    <!-- ============================================================ -->
+    <!-- LOT POLYGONS -->
+    <!-- ============================================================ -->
+    <g filter="url(#lotShadow)">
+      <!-- Lot 3C -->
+      <polygon points="1010.2,94.9 1001.8,114.3 987.0,145.5 970.4,175.6 952.2,204.9 925.9,241.9 897.6,277.4 867.3,311.3 857.6,321.6 728.2,236.7 458.9,173.1 458.1,100.2"
+               fill="url(#lotGrad)" stroke="#8a9e72" stroke-width="1.5"/>
+      <!-- Lot 2C -->
+      <polygon points="857.6,321.6 817.0,362.7 756.9,422.1 648.3,330.0 459.5,246.9 458.9,173.1 728.2,236.7"
+               fill="url(#lotGrad)" stroke="#8a9e72" stroke-width="1.5"/>
+      <!-- Lot 1C -->
+      <polygon points="756.9,422.1 648.3,330.0 459.5,246.9 440.9,339.9 655.6,522.2"
+               fill="url(#lotGrad)" stroke="#8a9e72" stroke-width="1.5"/>
+      <!-- Lot 2B -->
+      <polygon points="655.6,522.2 440.9,339.9 337.5,438.1 327.9,454.8 540.8,635.6"
+               fill="url(#lotGrad)" stroke="#8a9e72" stroke-width="1.5"/>
+      <!-- Lot 2A -->
+      <polygon points="540.8,635.6 327.9,454.8 218.2,563.1 439.6,735.6"
+               fill="url(#lotGrad)" stroke="#8a9e72" stroke-width="1.5"/>
+      <!-- Lot 1A -->
+      <polygon points="324.7,849.1 439.6,735.6 218.2,563.1 94.9,685.1"
+               fill="url(#lotGrad)" stroke="#8a9e72" stroke-width="1.5"/>
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- PRIVATE RIGHT OF WAYS (overlaying lots, along lot lines) -->
+    <!-- ============================================================ -->
+    <!-- Hinton Mill Court (upper) - GIS-defined access easement centerline -->
+    <g>
+      <!-- Road edge (outer border) -->
+      <path d="M 548 629 L 331 445 L 268 423 L 263 275"
+            stroke="#7a6b55" stroke-width="22" fill="none" stroke-linecap="butt" stroke-linejoin="round"/>
+      <!-- Gravel road surface (warm sand) -->
+      <path d="M 548 629 L 331 445 L 268 423 L 263 275"
+            stroke="#c4aa80" stroke-width="19" fill="none" stroke-linecap="butt" stroke-linejoin="round"/>
+      <!-- Gravel speckle layer 1 -->
+      <path d="M 548 629 L 331 445 L 268 423 L 263 275"
+            stroke="#9e8a6a" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="1.5,4,1,6,2,3,1,5" opacity="0.5"/>
+      <!-- Gravel speckle layer 2 (offset dots) -->
+      <path d="M 548 629 L 331 445 L 268 423 L 263 275"
+            stroke="#8a7858" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="0.8,10,1,7,0.5,12" opacity="0.4"/>
+    </g>
+
+    <!-- Noah Mill Trace (lower) - GIS-defined access easement centerline -->
+    <g>
+      <!-- Road edge (outer border) -->
+      <path d="M 344 828 L 114 664"
+            stroke="#7a6b55" stroke-width="22" fill="none" stroke-linecap="butt" stroke-linejoin="round"/>
+      <!-- Gravel road surface (warm sand) -->
+      <path d="M 344 828 L 114 664"
+            stroke="#c4aa80" stroke-width="19" fill="none" stroke-linecap="butt" stroke-linejoin="round"/>
+      <!-- Gravel speckle layer 1 -->
+      <path d="M 344 828 L 114 664"
+            stroke="#9e8a6a" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="1.5,4,1,6,2,3,1,5" opacity="0.5"/>
+      <!-- Gravel speckle layer 2 (offset dots) -->
+      <path d="M 344 828 L 114 664"
+            stroke="#8a7858" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="0.8,10,1,7,0.5,12" opacity="0.4"/>
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- LOT LABELS -->
+    <!-- ============================================================ -->
+    <!-- Lot 3C -->
+    <g transform="translate(728, 148)">
+      <ellipse cx="0" cy="0" rx="52" ry="34" fill="white" fill-opacity="0.92" stroke="#8a9e72" stroke-width="1.2"/>
+      <text x="0" y="-5" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="18" font-weight="600" fill="#3a4a2e">Lot 3C</text>
+      <text x="0" y="14" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="11" font-weight="400" fill="#6b7a5a">1.83 ac</text>
+    </g>
+
+    <!-- Lot 2C -->
+    <g transform="translate(666, 280)">
+      <ellipse cx="0" cy="0" rx="52" ry="34" fill="white" fill-opacity="0.92" stroke="#8a9e72" stroke-width="1.2"/>
+      <text x="0" y="-5" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="18" font-weight="600" fill="#3a4a2e">Lot 2C</text>
+      <text x="0" y="14" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="11" font-weight="400" fill="#6b7a5a">1.06 ac</text>
+    </g>
+
+    <!-- Lot 1C -->
+    <g transform="translate(591, 385)">
+      <ellipse cx="0" cy="0" rx="52" ry="34" fill="white" fill-opacity="0.92" stroke="#8a9e72" stroke-width="1.2"/>
+      <text x="0" y="-5" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="18" font-weight="600" fill="#3a4a2e">Lot 1C</text>
+      <text x="0" y="14" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="11" font-weight="400" fill="#6b7a5a">1.01 ac</text>
+    </g>
+
+    <!-- Lot 2B -->
+    <g transform="translate(471, 490)">
+      <ellipse cx="0" cy="0" rx="52" ry="34" fill="white" fill-opacity="0.92" stroke="#8a9e72" stroke-width="1.2"/>
+      <text x="0" y="-5" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="18" font-weight="600" fill="#3a4a2e">Lot 2B</text>
+      <text x="0" y="14" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="11" font-weight="400" fill="#6b7a5a">1.16 ac</text>
+    </g>
+
+    <!-- Lot 2A -->
+    <g transform="translate(385, 600)">
+      <ellipse cx="0" cy="0" rx="52" ry="34" fill="white" fill-opacity="0.92" stroke="#8a9e72" stroke-width="1.2"/>
+      <text x="0" y="-5" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="18" font-weight="600" fill="#3a4a2e">Lot 2A</text>
+      <text x="0" y="14" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="11" font-weight="400" fill="#6b7a5a">1.05 ac</text>
+    </g>
+
+    <!-- Lot 1A -->
+    <g transform="translate(265, 710)">
+      <ellipse cx="0" cy="0" rx="52" ry="34" fill="white" fill-opacity="0.92" stroke="#8a9e72" stroke-width="1.2"/>
+      <text x="0" y="-5" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="18" font-weight="600" fill="#3a4a2e">Lot 1A</text>
+      <text x="0" y="14" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="11" font-weight="400" fill="#6b7a5a">1.20 ac</text>
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- ROAD LABELS -->
+    <!-- ============================================================ -->
+    <!-- Cannady Mill Road label along the main road (lower section) -->
+    <g transform="translate(750, 655) rotate(-45)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="15" font-weight="600" fill="#5a5348" letter-spacing="5">CANNADY MILL ROAD</text>
+      <text x="0" y="17" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="9" font-weight="400" fill="#7a7268" letter-spacing="3">S.R. 1622</text>
+    </g>
+
+    <!-- Ridgewood Drive label -->
+    <g transform="translate(1028, 55) rotate(-68)">
+      <text x="0" y="0" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="9" font-weight="600" fill="#4a443a" letter-spacing="3">RIDGEWOOD DR</text>
+    </g>
+
+    <!-- Hinton Mill Court label (upper private ROW) - positioned along GIS centerline -->
+    <g transform="translate(440, 540) rotate(-40)">
+      <rect x="-92" y="-13" width="184" height="28" fill="white" fill-opacity="0.88" rx="3" stroke="#c5bfb2" stroke-width="0.5"/>
+      <text x="0" y="1" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="9.5" font-weight="600" fill="#4a443a" letter-spacing="2.5">HINTON MILL CT</text>
+      <text x="0" y="12" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="400" fill="#7a7268" letter-spacing="1.5">(PRIVATE R/W)</text>
+    </g>
+
+    <!-- Noah Mill Trace label (lower private ROW) - positioned along GIS centerline -->
+    <g transform="translate(230, 745) rotate(-35)">
+      <rect x="-92" y="-13" width="184" height="28" fill="white" fill-opacity="0.88" rx="3" stroke="#c5bfb2" stroke-width="0.5"/>
+      <text x="0" y="1" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="9.5" font-weight="600" fill="#4a443a" letter-spacing="2.5">NOAH MILL TRACE</text>
+      <text x="0" y="12" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="400" fill="#7a7268" letter-spacing="1.5">(PRIVATE R/W)</text>
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- TREES (positioned from aerial photograph) -->
+    <!-- ============================================================ -->
+
+    <!-- NW property boundary tree line (dense row along left edge) -->
+    <circle cx="425" cy="130" r="16" fill="url(#treeGrad)" opacity="0.85"/>
+    <circle cx="400" cy="155" r="14" fill="url(#treeGradDark)" opacity="0.82"/>
+    <circle cx="370" cy="200" r="17" fill="url(#treeGrad)" opacity="0.85"/>
+    <circle cx="340" cy="250" r="14" fill="url(#treeGradLight)" opacity="0.80"/>
+    <circle cx="310" cy="305" r="16" fill="url(#treeGrad)" opacity="0.85"/>
+    <circle cx="275" cy="365" r="15" fill="url(#treeGradDark)" opacity="0.82"/>
+    <circle cx="245" cy="425" r="16" fill="url(#treeGrad)" opacity="0.83"/>
+    <circle cx="210" cy="480" r="14" fill="url(#treeGradLight)" opacity="0.80"/>
+    <circle cx="180" cy="535" r="15" fill="url(#treeGrad)" opacity="0.82"/>
+
+    <!-- NE corner of Lot 3C / east boundary (cluster near Ridgewood Dr) -->
+    <circle cx="998" cy="115" r="17" fill="url(#treeGrad)" opacity="0.85"/>
+    <circle cx="980" cy="155" r="15" fill="url(#treeGradDark)" opacity="0.82"/>
+    <circle cx="960" cy="200" r="16" fill="url(#treeGrad)" opacity="0.83"/>
+    <circle cx="940" cy="248" r="14" fill="url(#treeGradLight)" opacity="0.80"/>
+
+    <!-- Lot 3C - one tree in western portion near 2C boundary -->
+    <circle cx="615" cy="190" r="13" fill="url(#treeGrad)" opacity="0.70"/>
+
+    <!-- Lot 2C - sparse: one near 3C boundary, one near western edge -->
+    <circle cx="590" cy="252" r="12" fill="url(#treeGradDark)" opacity="0.65"/>
+    <circle cx="510" cy="225" r="11" fill="url(#treeGrad)" opacity="0.60"/>
+
+    <!-- Lot 1C - along SE boundary, one near western/road side -->
+    <circle cx="635" cy="465" r="13" fill="url(#treeGrad)" opacity="0.68"/>
+    <circle cx="510" cy="305" r="12" fill="url(#treeGradLight)" opacity="0.65"/>
+
+    <!-- Lot 2B - prominent large tree upper portion, plus boundary trees -->
+    <circle cx="500" cy="445" r="16" fill="url(#treeGrad)" opacity="0.78"/>
+    <circle cx="390" cy="415" r="13" fill="url(#treeGradDark)" opacity="0.70"/>
+    <circle cx="555" cy="510" r="12" fill="url(#treeGradLight)" opacity="0.65"/>
+
+    <!-- Lot 2A - cluster along western boundary -->
+    <circle cx="270" cy="510" r="15" fill="url(#treeGrad)" opacity="0.78"/>
+    <circle cx="255" cy="545" r="14" fill="url(#treeGradDark)" opacity="0.75"/>
+    <circle cx="285" cy="485" r="13" fill="url(#treeGradLight)" opacity="0.72"/>
+
+    <!-- Lot 1A - DENSE cluster along road frontage (most prominent on property) -->
+    <circle cx="355" cy="800" r="19" fill="url(#treeGrad)" opacity="0.88"/>
+    <circle cx="385" cy="775" r="18" fill="url(#treeGradDark)" opacity="0.85"/>
+    <circle cx="330" cy="825" r="17" fill="url(#treeGrad)" opacity="0.86"/>
+    <circle cx="410" cy="755" r="16" fill="url(#treeGradLight)" opacity="0.83"/>
+    <circle cx="310" cy="848" r="15" fill="url(#treeGradDark)" opacity="0.82"/>
+
+    <!-- Lot 1A - western boundary -->
+    <circle cx="145" cy="660" r="15" fill="url(#treeGrad)" opacity="0.80"/>
+    <circle cx="125" cy="695" r="14" fill="url(#treeGradDark)" opacity="0.78"/>
+
+    <!-- Along Cannady Mill Road - sparse individual trees going NE -->
+    <circle cx="500" cy="700" r="14" fill="url(#treeGrad)" opacity="0.75"/>
+    <circle cx="610" cy="615" r="13" fill="url(#treeGradDark)" opacity="0.72"/>
+    <circle cx="740" cy="515" r="13" fill="url(#treeGrad)" opacity="0.70"/>
+    <circle cx="860" cy="420" r="12" fill="url(#treeGradLight)" opacity="0.68"/>
+
+    <!-- Near Ridgewood Dr intersection -->
+    <circle cx="1040" cy="65" r="13" fill="url(#treeGrad)" opacity="0.78"/>
+
+    <!-- ============================================================ -->
+    <!-- COMPASS ROSE -->
+    <!-- ============================================================ -->
+    <g transform="translate(1155, 850)">
+      <circle cx="0" cy="0" r="30" fill="white" fill-opacity="0.85" stroke="#b5ad9e" stroke-width="1"/>
+      <!-- N arrow -->
+      <polygon points="0,-22 -5,-8 0,-12 5,-8" fill="#3a4a2e"/>
+      <!-- S arrow -->
+      <polygon points="0,22 -5,8 0,12 5,8" fill="#b5ad9e"/>
+      <!-- E/W ticks -->
+      <line x1="22" y1="0" x2="12" y2="0" stroke="#b5ad9e" stroke-width="1.5"/>
+      <line x1="-22" y1="0" x2="-12" y2="0" stroke="#b5ad9e" stroke-width="1.5"/>
+      <text x="0" y="-24" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="9" font-weight="600" fill="#3a4a2e">N</text>
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- PROPERTY BOUNDARY (outer dashed line) -->
+    <!-- ============================================================ -->
+    <path d="M 1010.2,94.9 L 458.1,100.2 L 94.9,685.1 L 324.7,849.1 L 439.6,735.6 L 540.8,635.6 L 655.6,522.2 L 756.9,422.1 L 857.6,321.6 L 867.3,311.3 L 897.6,277.4 L 925.9,241.9 L 952.2,204.9 L 970.4,175.6 L 987.0,145.5 L 1001.8,114.3 L 1010.2,94.9"
+          fill="none" stroke="#8a7e6e" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.5"/>
+
+  </svg>
+
+  <div class="map-footer">
+    <span>CANNADY MILL ROAD &bull; BLACKWELL BUILDERS</span>
+    <span>FOR ILLUSTRATION PURPOSES ONLY &bull; NOT TO SCALE</span>
+  </div>
+</div>
+</body>
+</html>
