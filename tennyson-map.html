@@ -312,6 +312,44 @@
   #plat-controls input[type=range] { flex: 1; }
   #plat-controls .val { min-width: 36px; text-align: right; color: #555; }
   .btn-overlay.active { background: #3a4a2e; color: #fff; border-color: #2a3a1e; }
+
+  /* Builder view */
+  .lot.builder-pinnacle { fill: #b8cce8; stroke: #6a8ab8; }
+  .lot.builder-thadd    { fill: #e8d4b8; stroke: #b89060; }
+  .lot.builder-lilium   { fill: #d4b8e8; stroke: #9060b8; }
+  .lot.builder-jw2      { fill: #b8e8d4; stroke: #40a080; }
+  .lot.builder-colebrooke { fill: #e8b8d4; stroke: #b06090; }
+
+  #builder-legend {
+    display: none;
+    background: #f8f6f2;
+    border-bottom: 1px solid #e0ddd6;
+    padding: 6px 16px;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 0.5px;
+  }
+  #builder-legend.show { display: flex; }
+  #builder-legend .legend-item { gap: 6px; cursor: pointer; }
+  #builder-legend .legend-item:hover { color: #3a4a2e; }
+
+  .builder-block {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: #f8f6f2;
+    border-radius: 6px;
+    border: 1px solid #e0ddd6;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .builder-block .b-name { font-weight: 600; color: #3a4a2e; font-size: 12px; margin-bottom: 2px; }
+  .builder-block .b-contact { color: #666; font-size: 10px; }
+  .builder-block .b-contact a { color: #3a4a2e; text-decoration: none; }
+  .builder-block .b-contact a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -331,11 +369,23 @@
   <button class="btn" id="btn-reserved" onclick="setFilter('reserved')">Reserved</button>
   <button class="btn" title="Reset zoom" onclick="resetView()">Reset View</button>
   <button class="btn btn-overlay" id="btn-plat" onclick="togglePlatOverlay()" title="Toggle plat PDF overlay">Plat Overlay</button>
+  <button class="btn" id="btn-builders" onclick="toggleBuilderView()" title="Color lots by builder">Builders</button>
   <div class="legend">
     <div class="legend-item"><div class="swatch" style="background:#ccd9b8"></div>Available</div>
     <div class="legend-item"><div class="swatch" style="background:#e8c0b8"></div>Sold</div>
     <div class="legend-item"><div class="swatch" style="background:#e8dca0"></div>Reserved</div>
   </div>
+</div>
+
+<div id="builder-legend">
+  <strong style="font-size:10px;color:#3a4a2e;letter-spacing:1px;text-transform:uppercase;margin-right:4px">Builders:</strong>
+  <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(0)"><div class="swatch" style="background:#b8cce8;border-color:#6a8ab8"></div>Pinnacle (2,6,13)</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(1)"><div class="swatch" style="background:#e8d4b8;border-color:#b89060"></div>Thadd Roberts (7,10,12)</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(2)"><div class="swatch" style="background:#d4b8e8;border-color:#9060b8"></div>Lilium (11,14,17)</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(3)"><div class="swatch" style="background:#b8e8d4;border-color:#40a080"></div>JW2 (4,9,15)</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(4)"><div class="swatch" style="background:#e8b8d4;border-color:#b06090"></div>Colebrooke (3,8,16)</div>
+  <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(-1)"><div class="swatch" style="background:#ccd9b8;border-color:#8a9e72"></div>Unassigned (1,5,18)</div>
+  <span style="margin-left:8px;color:#aaa;font-size:9px">(click to highlight)</span>
 </div>
 
 <div class="main">
@@ -466,6 +516,7 @@
         <button class="status-btn status-btn-sold" onclick="setStatus('sold')">Sold</button>
         <button class="status-btn status-btn-reserved" onclick="setStatus('reserved')">Reserved</button>
       </div>
+      <div id="d-builder" class="builder-block" style="display:none"></div>
     </div>
     <div class="export-note">Status changes are in-memory only.</div>
   </div>
@@ -480,6 +531,18 @@
 
 <script>
 const LOT_DATA = [{"id": 1, "acres": 1.1586}, {"id": 2, "acres": 0.9848}, {"id": 3, "acres": 0.9757}, {"id": 4, "acres": 0.9192}, {"id": 5, "acres": 0.9239}, {"id": 6, "acres": 0.919}, {"id": 7, "acres": 0.9251}, {"id": 8, "acres": 0.9198}, {"id": 9, "acres": 0.927}, {"id": 10, "acres": 0.9255}, {"id": 11, "acres": 0.9194}, {"id": 12, "acres": 0.9183}, {"id": 13, "acres": 0.9183}, {"id": 14, "acres": 1.0056}, {"id": 15, "acres": 0.9935}, {"id": 16, "acres": 0.9935}, {"id": 17, "acres": 0.9218}, {"id": 18, "acres": 1.4563}];
+
+const BUILDER_DATA = [
+  { name: 'Pinnacle Home Builders & Construction Company, Inc.', short: 'Pinnacle', contact: 'Mike & Renee McNally', address: '210 Barn Hill Ln, Wake Forest, NC 27587', phone: '919-291-7000', email: 'mcnallyspinnacle@aol.com', lots: [2,6,13], cls: 'builder-pinnacle' },
+  { name: 'Homes by Thadd Roberts, Inc.',                        short: 'Thadd Roberts', contact: 'Thadd Roberts',          address: '8305 Six Forks Rd #203, Raleigh, NC 27615',   phone: '919-669-7875', email: 'thaddroberts1@gmail.com',         lots: [7,10,12], cls: 'builder-thadd' },
+  { name: 'Lilium Homes',                                        short: 'Lilium Homes',  contact: 'Juana Martinez',          address: '5 W Mason St., Franklinton, NC 27525',         phone: '336-823-4342', email: 'jmartinez@Lilium-homes.com',     lots: [11,14,17], cls: 'builder-lilium' },
+  { name: 'JW2 Building Co.',                                    short: 'JW2 Building',  contact: 'Jon Ward',                address: '3316 Thomas Rd., Raleigh, NC 27607',           phone: '919-280-2107', email: 'jon@jw2buildingcompany.com',      lots: [4,9,15],  cls: 'builder-jw2' },
+  { name: 'Colebrooke Custom Homes',                             short: 'Colebrooke',    contact: 'Dustin & Lauren Moore',   address: '848 Cooke Rd, Louisburg, NC 27549',            phone: '(919) 697-7308', email: 'dustin.colebrookehomes@gmail.com', lots: [3,8,16], cls: 'builder-colebrooke' },
+];
+const builderByLot = {};
+BUILDER_DATA.forEach(b => b.lots.forEach(id => builderByLot[id] = b));
+let builderView = false, builderFilter = null;
+
 const statuses = {};
 LOT_DATA.forEach(l => statuses[l.id] = 'available');
 let selectedId = null, currentFilter = 'all';
@@ -508,6 +571,14 @@ function selectLot(id) {
   document.getElementById('d-num').textContent = 'Lot ' + id;
   document.getElementById('d-acres').textContent = lot ? lot.acres + ' ac' : '—';
   renderBadge(statuses[id]);
+  const b = builderByLot[id];
+  const bEl = document.getElementById('d-builder');
+  if (b) {
+    bEl.innerHTML = `<div class="b-name">${b.name}</div><div class="b-contact">${b.contact}<br>${b.address}<br>${b.phone} &middot; <a href="mailto:${b.email}">${b.email}</a></div>`;
+    bEl.style.display = 'block';
+  } else {
+    bEl.style.display = 'none';
+  }
 }
 
 function renderBadge(status) {
@@ -524,6 +595,42 @@ function setStatus(status) {
   renderBadge(status);
   updateStats();
   applyFilter(currentFilter);
+}
+
+function toggleBuilderView() {
+  builderView = !builderView;
+  builderFilter = null;
+  document.getElementById('btn-builders').classList.toggle('active', builderView);
+  document.getElementById('builder-legend').classList.toggle('show', builderView);
+  applyBuilderColors();
+}
+
+function filterByBuilder(idx) {
+  if (!builderView) return;
+  const b = idx >= 0 ? BUILDER_DATA[idx] : null;
+  builderFilter = (builderFilter === idx) ? null : idx;
+  document.querySelectorAll('.lot').forEach(el => {
+    const id = parseInt(el.dataset.lot);
+    const lotBuilder = builderByLot[id];
+    if (builderFilter === null) {
+      el.classList.remove('dimmed');
+    } else if (idx >= 0) {
+      el.classList.toggle('dimmed', lotBuilder !== BUILDER_DATA[idx]);
+    } else {
+      el.classList.toggle('dimmed', lotBuilder !== undefined);
+    }
+  });
+}
+
+function applyBuilderColors() {
+  document.querySelectorAll('.lot').forEach(el => {
+    BUILDER_DATA.forEach(b => el.classList.remove(b.cls));
+    el.classList.remove('dimmed');
+    if (builderView) {
+      const b = builderByLot[parseInt(el.dataset.lot)];
+      if (b) el.classList.add(b.cls);
+    }
+  });
 }
 
 function setFilter(filter) {
