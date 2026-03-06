@@ -6,7 +6,9 @@
       "Bash(pip install:*)",
       "Bash(sort:*)",
       "Bash(git:*)",
-      "Bash(py:*)"
+      "Bash(py:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)"
     ]
   }
 }

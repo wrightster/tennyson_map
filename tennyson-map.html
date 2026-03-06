@@ -7,10 +7,104 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
 
+  :root {
+    --bg-body: #f5f1eb;
+    --bg-surface: #ffffff;
+    --bg-header: #2c3e28;
+    --bg-builder: #f8f6f2;
+    --color-text: #333;
+    --color-text-mid: #555;
+    --color-text-muted: #888;
+    --color-text-light: #aaa;
+    --color-accent: #3a4a2e;
+    --color-border: #e0ddd6;
+    --color-border-inner: #f0ede8;
+    --color-border-btn: #c5bfb2;
+    --color-road: #cac4b4;
+    --color-road-edge: #b5ad9e;
+    --color-zoom-hover: #f0f4e8;
+    --color-stat-num: #3a4a2e;
+    --color-lot-stroke: #8a9e72;
+    --color-lot-label: #3a4a2e;
+    --color-lot-label-sub: #6b7a5a;
+    --logo-color: #000000;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg-body: #1a2218;
+      --bg-surface: #232d1e;
+      --bg-header: #141c10;
+      --bg-builder: #1e2819;
+      --color-text: #ccd8c4;
+      --color-text-mid: #9aaa90;
+      --color-text-muted: #728068;
+      --color-text-light: #526048;
+      --color-accent: #8fb87a;
+      --color-border: #364032;
+      --color-border-inner: #2a3826;
+      --color-border-btn: #4a5a42;
+      --color-road: #5a7050;
+      --color-road-edge: #6a8060;
+      --color-zoom-hover: #283822;
+      --color-stat-num: #8fb87a;
+      --color-lot-stroke: #b0c898;
+      --color-lot-label: #3a4a2e;
+      --color-lot-label-sub: #6b7a5a;
+      --logo-color: #ffffff;
+    }
+  }
+
+  [data-theme="dark"] {
+    --bg-body: #1a2218;
+    --bg-surface: #232d1e;
+    --bg-header: #141c10;
+    --bg-builder: #1e2819;
+    --color-text: #ccd8c4;
+    --color-text-mid: #9aaa90;
+    --color-text-muted: #728068;
+    --color-text-light: #526048;
+    --color-accent: #8fb87a;
+    --color-border: #364032;
+    --color-border-inner: #2a3826;
+    --color-border-btn: #4a5a42;
+    --color-road: #5a7050;
+    --color-road-edge: #6a8060;
+    --color-zoom-hover: #283822;
+    --color-stat-num: #8fb87a;
+    --color-lot-stroke: #b0c898;
+    --color-lot-label: #3a4a2e;
+    --color-lot-label-sub: #6b7a5a;
+    --logo-color: #ffffff;
+  }
+
+  [data-theme="light"] {
+    --bg-body: #f5f1eb;
+    --bg-surface: #ffffff;
+    --bg-header: #2c3e28;
+    --bg-builder: #f8f6f2;
+    --color-text: #333;
+    --color-text-mid: #555;
+    --color-text-muted: #888;
+    --color-text-light: #aaa;
+    --color-accent: #3a4a2e;
+    --color-border: #e0ddd6;
+    --color-border-inner: #f0ede8;
+    --color-border-btn: #c5bfb2;
+    --color-road: #cac4b4;
+    --color-road-edge: #b5ad9e;
+    --color-zoom-hover: #f0f4e8;
+    --color-stat-num: #3a4a2e;
+    --color-lot-stroke: #8a9e72;
+    --color-lot-label: #3a4a2e;
+    --color-lot-label-sub: #6b7a5a;
+    --logo-color: #000000;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #f5f1eb;
+    background: var(--bg-body);
     font-family: 'Montserrat', sans-serif;
     height: 100vh;
     display: flex;
@@ -19,7 +113,7 @@
   }
 
   header {
-    background: #2c3e28;
+    background: var(--bg-header);
     color: #fff;
     padding: 14px 24px;
     display: flex;
@@ -51,8 +145,8 @@
   }
 
   .toolbar {
-    background: #fff;
-    border-bottom: 1px solid #e0ddd6;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--color-border);
     padding: 8px 16px;
     display: flex;
     gap: 8px;
@@ -63,18 +157,18 @@
   .btn {
     padding: 5px 14px;
     border-radius: 20px;
-    border: 1.5px solid #c5bfb2;
-    background: #fff;
+    border: 1.5px solid var(--color-border-btn);
+    background: var(--bg-surface);
     cursor: pointer;
     font-size: 11px;
     font-weight: 500;
     font-family: 'Montserrat', sans-serif;
     letter-spacing: 0.5px;
     transition: all 0.15s;
-    color: #555;
+    color: var(--color-text-mid);
   }
-  .btn:hover { border-color: #3a4a2e; color: #3a4a2e; }
-  .btn.active { background: #3a4a2e; color: #fff; border-color: #3a4a2e; }
+  .btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .btn.active { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
   .legend {
     display: flex;
     gap: 14px;
@@ -86,7 +180,7 @@
     align-items: center;
     gap: 5px;
     font-size: 10px;
-    color: #888;
+    color: var(--color-text-muted);
     letter-spacing: 0.5px;
   }
   .swatch {
@@ -102,7 +196,7 @@
     flex: 1;
     overflow: hidden;
     position: relative;
-    background: #eae6dc;
+    background: var(--bg-body);
   }
   svg {
     display: block;
@@ -114,14 +208,14 @@
 
   .road-fill {
     fill: none;
-    stroke: #cac4b4;
+    stroke: var(--color-road);
     stroke-width: 28;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
   .road-edge {
     fill: none;
-    stroke: #b5ad9e;
+    stroke: var(--color-road-edge);
     stroke-width: 1;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -149,7 +243,7 @@
   }
   .lot {
     fill: #ccd9b8;
-    stroke: #8a9e72;
+    stroke: var(--color-lot-stroke);
     stroke-width: 1.5;
     cursor: pointer;
     transition: fill 0.15s, stroke-width 0.15s;
@@ -157,10 +251,10 @@
   .lot:hover {
     fill: #b8cda0;
     stroke-width: 2.5;
-    stroke: #6a8a52;
+    stroke: var(--color-lot-stroke);
   }
   .lot.selected {
-    stroke: #2c3e28;
+    stroke: var(--color-accent);
     stroke-width: 3;
     filter: drop-shadow(0 0 6px rgba(44,62,40,0.4));
   }
@@ -174,7 +268,7 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    fill: #3a4a2e;
+    fill: var(--color-lot-label);
     text-anchor: middle;
     dominant-baseline: middle;
     letter-spacing: 0.5px;
@@ -183,15 +277,15 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 8px;
     font-weight: 400;
-    fill: #6b7a5a;
+    fill: var(--color-lot-label-sub);
     text-anchor: middle;
     dominant-baseline: middle;
   }
 
   .info-panel {
     width: 260px;
-    background: #fff;
-    border-left: 1px solid #e0ddd6;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--color-border);
     padding: 20px;
     overflow-y: auto;
     flex-shrink: 0;
@@ -200,12 +294,12 @@
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-size: 16px;
     font-weight: 600;
-    color: #3a4a2e;
+    color: var(--color-accent);
     margin-bottom: 14px;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-  .placeholder { color: #aaa; font-size: 12px; line-height: 1.6; }
+  .placeholder { color: var(--color-text-light); font-size: 12px; line-height: 1.6; }
   .lot-info { display: none; }
   .lot-info.show { display: block; }
   .info-row {
@@ -213,11 +307,11 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 0;
-    border-bottom: 1px solid #f0ede8;
+    border-bottom: 1px solid var(--color-border-inner);
     font-size: 12px;
   }
-  .info-key { color: #999; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
-  .info-value { font-weight: 600; color: #3a4a2e; }
+  .info-key { color: var(--color-text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .info-value { font-weight: 600; color: var(--color-accent); }
   .status-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -250,17 +344,17 @@
   .status-btn-reserved:hover { background: #f0e090; }
 
   .stats-bar {
-    background: #fff;
-    border-top: 1px solid #e0ddd6;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--color-border);
     padding: 8px 24px;
     display: flex;
     gap: 28px;
     font-size: 11px;
-    color: #888;
+    color: var(--color-text-muted);
     flex-shrink: 0;
     letter-spacing: 0.5px;
   }
-  .stat-num { font-weight: 700; color: #3a4a2e; }
+  .stat-num { font-weight: 700; color: var(--color-stat-num); }
 
   .zoom-controls {
     position: absolute;
@@ -275,20 +369,21 @@
     width: 32px;
     height: 32px;
     border-radius: 6px;
-    border: 1px solid #c5bfb2;
-    background: #fff;
+    border: 1px solid var(--color-border-btn);
+    background: var(--bg-surface);
     font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-    color: #555;
+    color: var(--color-text-mid);
   }
-  .zoom-btn:hover { background: #f0f4e8; border-color: #3a4a2e; color: #3a4a2e; }
+  .zoom-btn:hover { background: var(--color-zoom-hover); border-color: var(--color-accent); color: var(--color-accent); }
 
-  .road-interior { fill: #cac4b4; stroke: none; pointer-events: none; }
-  .export-note { font-size: 10px; color: #bbb; margin-top: 20px; line-height: 1.5; }
+  .map-bg { fill: var(--bg-body); }
+  .road-interior { fill: var(--color-road); stroke: none; pointer-events: none; }
+  .export-note { font-size: 10px; color: var(--color-text-light); margin-top: 20px; line-height: 1.5; }
 
   /* Plat overlay */
   #plat-controls {
@@ -296,22 +391,22 @@
     position: absolute;
     bottom: 70px;
     left: 16px;
-    background: rgba(255,255,255,0.96);
-    border: 1px solid #c5bfb2;
+    background: var(--bg-surface);
+    border: 1px solid var(--color-border-btn);
     border-radius: 8px;
     padding: 10px 14px;
     z-index: 20;
     min-width: 210px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     font-size: 12px;
-    color: #333;
+    color: var(--color-text);
   }
-  #plat-controls .ctrl-title { font-weight: 600; margin-bottom: 8px; font-size: 11px; color: #3a4a2e; text-transform: uppercase; letter-spacing: 0.5px; }
+  #plat-controls .ctrl-title { font-weight: 600; margin-bottom: 8px; font-size: 11px; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.5px; }
   #plat-controls label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 8px; }
   #plat-controls span.lbl { min-width: 60px; }
   #plat-controls input[type=range] { flex: 1; }
-  #plat-controls .val { min-width: 36px; text-align: right; color: #555; }
-  .btn-overlay.active { background: #3a4a2e; color: #fff; border-color: #2a3a1e; }
+  #plat-controls .val { min-width: 36px; text-align: right; color: var(--color-text-mid); }
+  .btn-overlay.active { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
 
   /* Builder view */
   .lot.builder-pinnacle { fill: #b8cce8; stroke: #6a8ab8; }
@@ -322,34 +417,70 @@
 
   #builder-legend {
     display: none;
-    background: #f8f6f2;
-    border-bottom: 1px solid #e0ddd6;
+    background: var(--bg-builder);
+    border-bottom: 1px solid var(--color-border);
     padding: 6px 16px;
     gap: 16px;
     flex-wrap: wrap;
     align-items: center;
     flex-shrink: 0;
     font-size: 10px;
-    color: #666;
+    color: var(--color-text-muted);
     letter-spacing: 0.5px;
   }
   #builder-legend.show { display: flex; }
   #builder-legend .legend-item { gap: 6px; cursor: pointer; }
-  #builder-legend .legend-item:hover { color: #3a4a2e; }
+  #builder-legend .legend-item:hover { color: var(--color-accent); }
 
   .builder-block {
     margin-top: 14px;
     padding: 10px 12px;
-    background: #f8f6f2;
+    background: var(--bg-builder);
     border-radius: 6px;
-    border: 1px solid #e0ddd6;
+    border: 1px solid var(--color-border);
     font-size: 11px;
     line-height: 1.7;
   }
-  .builder-block .b-name { font-weight: 600; color: #3a4a2e; font-size: 12px; margin-bottom: 2px; }
-  .builder-block .b-contact { color: #666; font-size: 10px; }
-  .builder-block .b-contact a { color: #3a4a2e; text-decoration: none; }
+  .builder-block .b-name { font-weight: 600; color: var(--color-accent); font-size: 12px; margin-bottom: 2px; }
+  .builder-block .b-contact { color: var(--color-text-muted); font-size: 10px; }
+  .builder-block .b-contact a { color: var(--color-accent); text-decoration: none; }
   .builder-block .b-contact a:hover { text-decoration: underline; }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    background: none;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .theme-toggle:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.7); }
+
+  /* JWRG Watermark */
+  .jwrg-watermark {
+    position: absolute;
+    bottom: 24px;
+    right: 20px;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.18;
+    width: 160px;
+  }
+  .jwrg-watermark svg { width: 100%; height: auto; color: var(--logo-color); }
+  .jwrg-watermark .logo-neg { display: block; }
+  .jwrg-watermark .logo-pos { display: none; }
+  [data-theme="dark"] .jwrg-watermark .logo-neg { display: none; }
+  [data-theme="dark"] .jwrg-watermark .logo-pos { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .jwrg-watermark .logo-neg { display: none; }
+    :root:not([data-theme="light"]) .jwrg-watermark .logo-pos { display: block; }
+  }
 </style>
 </head>
 <body>
@@ -359,7 +490,10 @@
     <h2>Lawrence Road</h2>
     <h1>Tennyson Neighborhood</h1>
   </div>
-  <div class="meta">18 lots</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="meta">18 lots</div>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">&#9680; Dark</button>
+  </div>
 </header>
 
 <div class="toolbar">
@@ -396,6 +530,16 @@
       <button class="zoom-btn" title="Reset" onclick="resetView()" style="font-size:12px">&#8962;</button>
     </div>
 
+    <div class="jwrg-watermark">
+      <svg class="logo-neg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 94.75 23.65">
+        <path d="M46.05,2.86v15.27c0,1.46-1.18,2.64-2.64,2.64h-17.79V2.88h5.27v12.64h1.17c.64,0,1.16-.52,1.16-1.16v-6.24h5.27v7.39h1.14c.64,0,1.16-.52,1.16-1.16V2.86h5.27ZM15.35,2.86v5.27h2.68v6.24c0,.64-.52,1.16-1.16,1.16h-7.62c-.64,0-1.16-.52-1.16-1.16v-3.54H2.82l.02,7.33c0,1.45,1.18,2.63,2.64,2.63h15.17c1.46,0,2.64-1.18,2.64-2.64V2.86h-7.94ZM66.53,10.51h0c1.46,0,2.64-1.18,2.64-2.64v-2.37c0-1.46-1.18-2.64-2.64-2.64h-17.84v17.91h5.28v-4.95h8.77c.64,0,1.16.52,1.16,1.16v3.79h5.27v-7.62c0-1.46-1.18-2.64-2.64-2.64ZM62.75,10.5h-7.45c-.64,0-1.16-.52-1.16-1.16h0c0-.64.52-1.16,1.16-1.16h7.45c.64,0,1.16.52,1.16,1.16s-.52,1.16-1.16,1.16ZM91.93,10.74h-5.27v4.76h-8.75c-.64,0-1.16-.52-1.16-1.16v-4.76c0-.64.52-1.16,1.16-1.16h14.02V3.16h-17.8c-1.46,0-2.64,1.18-2.64,2.64v12.33c0,1.46,1.18,2.64,2.64,2.64h17.8v-10.02Z" fill="currentColor"/>
+      </svg>
+      <svg class="logo-pos" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 94.75 23.65">
+        <path d="M62.75,8.24h-7.45c-.64,0-1.16.52-1.16,1.16h0c0,.64.52,1.16,1.16,1.16h7.45c.64,0,1.16-.52,1.16-1.16s-.52-1.16-1.16-1.16Z" fill="currentColor"/>
+        <path d="M0,.09v23.56h94.75V.09H0ZM23.29,18.21c0,1.46-1.18,2.64-2.64,2.64H5.48c-1.45,0-2.63-1.18-2.64-2.63l-.02-7.33h5.27v3.54c0,.64.52,1.16,1.16,1.16h7.62c.64,0,1.16-.52,1.16-1.16v-6.24h-2.68V2.92h7.94v15.29ZM46.05,18.19c0,1.46-1.18,2.64-2.64,2.64h-17.79V2.94h5.27v12.64h1.17c.64,0,1.16-.52,1.16-1.16v-6.24h5.27v7.39h1.14c.64,0,1.16-.52,1.16-1.16V2.92h5.27v15.27ZM69.17,20.83h-5.27v-3.79c0-.64-.52-1.16-1.16-1.16h-8.77v4.95h-5.27V2.92s17.83,0,17.83,0c1.46,0,2.64,1.18,2.64,2.64v2.37c0,1.46-1.18,2.64-2.64,2.64h0c1.46,0,2.64,1.18,2.64,2.64v7.62ZM91.93,8.48h-14.02c-.64,0-1.16.52-1.16,1.16v4.76c0,.64.52,1.16,1.16,1.16h8.75v-4.76h5.27v10.02h-3.15s-14.66,0-14.66,0c-1.46,0-2.64-1.18-2.64-2.64V5.85c0-1.46,1.18-2.64,2.64-2.64h17.8v5.27Z" fill="currentColor"/>
+      </svg>
+    </div>
+
     <!-- Plat overlay fine-tune panel -->
     <div id="plat-controls">
       <div class="ctrl-title">Plat Overlay</div>
@@ -413,7 +557,7 @@
         </filter>
       </defs>
 
-      <rect x="-20" y="-20" width="1240" height="1000" fill="#eae6dc" rx="4"/>
+      <rect x="-20" y="-20" width="1240" height="1000" rx="4" class="map-bg"/>
 
       <!-- Roads -->
       <g class="roads">
@@ -549,7 +693,29 @@ let selectedId = null, currentFilter = 'all';
 let scale = 1, panX = 0, panY = 0, isPanning = false, startPX, startPY;
 const VB_W = 1240, VB_H = 1000;
 
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const theme = saved || system;
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeToggle(theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  updateThemeToggle(next);
+}
+
+function updateThemeToggle(theme) {
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerHTML = theme === 'dark' ? '&#9681; Light' : '&#9680; Dark';
+}
+
 function init() {
+  initTheme();
   document.querySelectorAll('.lot').forEach(el => el.addEventListener('click', onLotClick));
   initPanZoom();
   updateStats();
