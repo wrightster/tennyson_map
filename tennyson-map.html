@@ -439,10 +439,11 @@
         <polyline points="702.9,894.0 746.9,837.2" class="road-edge" />
       </g>
 
-      <!-- Plat overlay image -->
+      <!-- Plat overlay image (3600×2700 px PNG, matrix maps pixels→SVG coords) -->
       <image id="plat-overlay"
         href="plat_full.png"
-        x="-80" y="50" width="1350"
+        x="0" y="0" width="3600" height="2700"
+        transform="matrix(0.3768,0,0,0.3768,-119,26)"
         opacity="0.5"
         style="display:none; pointer-events:none;"/>
 
@@ -616,12 +617,11 @@ init();
 // SVG_x = 0.21234 * img_px_col + (-285.19)
 // SVG_y = 0.19610 * img_px_row + 257.78
 // SVG matrix(a,b,c,d,e,f): x'=a*x+c*y+e, y'=b*x+d*y+f
-// where x=col(=PDF_x dir), y=row(=PDF_y dir)
-// → matrix(0, 0.19610, 0.21234, 0, -285.19, 257.78)
-const BASE_SX = 1;   // col → SVG_x scale
-const BASE_SY = -1;   // row → SVG_y scale
-const BASE_TX = 0;   // SVG_x translation
-const BASE_TY = 0;    // SVG_y translation
+// matrix(a,0,0,a,tx,ty): svg_x = a*png_x + tx, svg_y = a*png_y + ty
+const BASE_SX = 0.3768;   // png_x → SVG_x scale
+const BASE_SY = 0.3768;   // png_y → SVG_y scale
+const BASE_TX = -119;     // SVG_x translation
+const BASE_TY = 26;       // SVG_y translation
 // Centre of lot area in SVG coords (used for scale-about-centre)
 const OV_CX = 555, OV_CY = 513;
 
@@ -632,9 +632,9 @@ function togglePlatOverlay() {
   const img = document.getElementById('plat-overlay');
   const btn = document.getElementById('btn-plat');
   const panel = document.getElementById('plat-controls');
-  img.style.display = platVisible ? '' : 'none';
+  img.style.display = platVisible ? 'block' : 'none';
   btn.classList.toggle('active', platVisible);
-  panel.style.display = platVisible ? '' : 'none';
+  panel.style.display = platVisible ? 'block' : 'none';
   if (platVisible) updateOverlay();
 }
 
@@ -643,20 +643,28 @@ function updateOverlay() {
   const scale   = +document.getElementById('oc-scale').value / 100;
   const dx      = +document.getElementById('oc-dx').value;
   const dy      = +document.getElementById('oc-dy').value;
+  const rot     = +document.getElementById('oc-rot').value;
+  const flipH   = document.getElementById('oc-fliph').checked ? -1 : 1;
+  const flipV   = document.getElementById('oc-flipv').checked ? -1 : 1;
 
   document.getElementById('v-opacity').textContent = Math.round(opacity*100) + '%';
   document.getElementById('v-scale').textContent   = scale.toFixed(2);
   document.getElementById('v-dx').textContent      = dx;
   document.getElementById('v-dy').textContent      = dy;
+  document.getElementById('v-rot').textContent     = rot + '°';
 
-  // Scale about the lot-area centre, then add manual offsets
+  // Base alignment matrix, scaled about lot-area centre
   const sx = BASE_SX * scale;
   const sy = BASE_SY * scale;
   const tx = BASE_TX * scale + (1 - scale) * OV_CX + dx;
   const ty = BASE_TY * scale + (1 - scale) * OV_CY + dy;
+  const base = `matrix(${sx},0,0,${sy},${tx},${ty})`;
+
+  // Rotate + mirror applied around lot-area centre, after base placement
+  const pre = `translate(${OV_CX},${OV_CY}) rotate(${rot}) scale(${flipH},${flipV}) translate(${-OV_CX},${-OV_CY})`;
 
   const img = document.getElementById('plat-overlay');
-  img.setAttribute('transform', `matrix(0,${sy},${sx},0,${tx},${ty}) rotate(90)`);
+  img.setAttribute('transform', `${pre} ${base}`);
   img.setAttribute('opacity', opacity);
 }
 </script>
