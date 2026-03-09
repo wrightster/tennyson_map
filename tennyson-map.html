@@ -37,7 +37,7 @@
   header h2 {
     font-family: 'Montserrat', sans-serif;
     font-weight: 300;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 4px;
     color: #a8c490;
     text-transform: uppercase;
@@ -46,12 +46,12 @@
   header h1 {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-weight: 600;
-    font-size: 22px;
+    font-size: 24px;
     letter-spacing: 2px;
     text-transform: uppercase;
   }
   header .meta {
-    font-size: 11px;
+    font-size: 12px;
     opacity: 0.7;
     letter-spacing: 1px;
   }
@@ -72,7 +72,7 @@
     border: 1.5px solid #c5bfb2;
     background: #fff;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     font-family: 'Montserrat', sans-serif;
     letter-spacing: 0.5px;
@@ -91,7 +91,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 10px;
+    font-size: 11px;
     color: #888;
     letter-spacing: 0.5px;
   }
@@ -100,6 +100,8 @@
     height: 14px;
     border-radius: 3px;
     border: 1px solid rgba(0,0,0,0.15);
+    display: block;
+    flex-shrink: 0;
   }
 
   .main { display: flex; flex: 1; overflow: hidden; }
@@ -170,15 +172,15 @@
     stroke-width: 3;
     filter: drop-shadow(0 0 6px rgba(44,62,40,0.4));
   }
-  .lot.available { fill: #ccd9b8; }
-  .lot.sold { fill: #e8c0b8; }
-  .lot.reserved { fill: #e8dca0; }
+  .lot.available { fill: url(#pat-available); }
+  .lot.sold { fill: url(#pat-sold); }
+  .lot.reserved { fill: url(#pat-reserved); }
   .lot.dimmed { opacity: 0.2; }
 
   .lot-label-group { pointer-events: none; }
   .lot-label-num {
     font-family: 'Montserrat', sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     fill: #3a4a2e;
     text-anchor: middle;
@@ -187,7 +189,7 @@
   }
   .lot-label-acres {
     font-family: 'Montserrat', sans-serif;
-    font-size: 8px;
+    font-size: 9px;
     font-weight: 400;
     fill: #6b7a5a;
     text-anchor: middle;
@@ -204,14 +206,14 @@
   }
   .panel-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #3a4a2e;
     margin-bottom: 14px;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-  .placeholder { color: #aaa; font-size: 12px; line-height: 1.6; }
+  .placeholder { color: #aaa; font-size: 13px; line-height: 1.6; }
   .lot-info { display: none; }
   .lot-info.show { display: block; }
   .info-row {
@@ -220,15 +222,15 @@
     align-items: center;
     padding: 8px 0;
     border-bottom: 1px solid #f0ede8;
-    font-size: 12px;
+    font-size: 13px;
   }
-  .info-key { color: #999; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .info-key { color: #999; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
   .info-value { font-weight: 600; color: #3a4a2e; }
   .status-badge {
     display: inline-block;
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     margin: 12px 0;
     letter-spacing: 1px;
@@ -240,7 +242,7 @@
   .status-btns { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
   .status-btn {
     padding: 6px 14px;
-    font-size: 10px;
+    font-size: 11px;
     cursor: pointer;
     border-radius: 16px;
     font-weight: 600;
@@ -261,7 +263,7 @@
     padding: 8px 24px;
     display: flex;
     gap: 28px;
-    font-size: 11px;
+    font-size: 12px;
     color: #888;
     flex-shrink: 0;
     letter-spacing: 0.5px;
@@ -283,7 +285,7 @@
     border-radius: 6px;
     border: 1px solid #c5bfb2;
     background: #fff;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -296,14 +298,37 @@
   .road-interior { fill: #cac4b4; stroke: none; pointer-events: none; }
   .road-label {
     font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     fill: #8a8274;
     letter-spacing: 3px;
     text-transform: uppercase;
     pointer-events: none;
   }
-  .export-note { font-size: 10px; color: #bbb; margin-top: 20px; line-height: 1.5; }
+  .export-note { font-size: 11px; color: #bbb; margin-top: 20px; line-height: 1.5; }
+
+  /* Topo overlay */
+  #topo-controls {
+    display: none;
+    position: absolute;
+    bottom: 70px;
+    left: 16px;
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #c5bfb2;
+    border-radius: 8px;
+    padding: 10px 14px;
+    z-index: 20;
+    min-width: 210px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 13px;
+    color: #333;
+  }
+  #topo-controls .ctrl-title { font-weight: 600; margin-bottom: 8px; font-size: 12px; color: #3a4a2e; text-transform: uppercase; letter-spacing: 0.5px; }
+  #topo-controls label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 8px; }
+  #topo-controls span.lbl { min-width: 60px; }
+  #topo-controls input[type=range] { flex: 1; }
+  #topo-controls .val { min-width: 36px; text-align: right; color: #555; }
+  .btn-topo-overlay.active { background: #3a4a2e; color: #fff; border-color: #2a3a1e; }
 
   /* Plat overlay */
   #plat-controls {
@@ -318,23 +343,23 @@
     z-index: 20;
     min-width: 210px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    font-size: 12px;
+    font-size: 13px;
     color: #333;
   }
-  #plat-controls .ctrl-title { font-weight: 600; margin-bottom: 8px; font-size: 11px; color: #3a4a2e; text-transform: uppercase; letter-spacing: 0.5px; }
+  #plat-controls .ctrl-title { font-weight: 600; margin-bottom: 8px; font-size: 12px; color: #3a4a2e; text-transform: uppercase; letter-spacing: 0.5px; }
   #plat-controls label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 8px; }
   #plat-controls span.lbl { min-width: 60px; }
   #plat-controls input[type=range] { flex: 1; }
   #plat-controls .val { min-width: 36px; text-align: right; color: #555; }
   .btn-overlay.active { background: #3a4a2e; color: #fff; border-color: #2a3a1e; }
 
-  /* Builder dots */
+  /* Builder lot strokes */
   .builder-dot {
     pointer-events: none;
     display: none;
   }
   .builder-dot.show { display: block; }
-  .builder-dot.dimmed { opacity: 0.2; }
+  .builder-dot.dimmed { opacity: 0.15; }
 
   #builder-legend {
     display: none;
@@ -345,7 +370,7 @@
     flex-wrap: wrap;
     align-items: center;
     flex-shrink: 0;
-    font-size: 10px;
+    font-size: 11px;
     color: #666;
     letter-spacing: 0.5px;
   }
@@ -359,11 +384,11 @@
     background: #f8f6f2;
     border-radius: 6px;
     border: 1px solid #e0ddd6;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.7;
   }
-  .builder-block .b-name { font-weight: 600; color: #3a4a2e; font-size: 12px; margin-bottom: 2px; }
-  .builder-block .b-contact { color: #666; font-size: 10px; }
+  .builder-block .b-name { font-weight: 600; color: #3a4a2e; font-size: 20px; margin-bottom: 2px; }
+  .builder-block .b-contact { color: #666; font-size: 11px; }
   .builder-block .b-contact a { color: #3a4a2e; text-decoration: none; }
   .builder-block .b-contact a:hover { text-decoration: underline; }
 
@@ -375,24 +400,24 @@
   }
   .info-panel .form-section-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     color: #3a4a2e;
     margin-bottom: 10px;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-  .info-panel .jwrg-form { font-size: 12px; }
-  .info-panel .jwrg-field label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #999; }
+  .info-panel .jwrg-form { font-size: 13px; }
+  .info-panel .jwrg-field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #999; }
   .info-panel .jwrg-field input,
   .info-panel .jwrg-field textarea,
   .info-panel .jwrg-field select {
-    font-size: 12px;
+    font-size: 13px;
     font-family: 'Montserrat', sans-serif;
   }
   .info-panel .jwrg-submit {
     font-family: 'Montserrat', sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -405,9 +430,9 @@
     z-index: 5;
     pointer-events: none;
     opacity: 0.18;
-    width: 160px;
+    width: 128px;
   }
-  .jwrg-watermark svg { width: 100%; height: auto; color: var(--logo-color); }
+  .jwrg-watermark img { width: 100%; height: auto; filter: brightness(0); }
 
   /* Close button for bottom sheet */
   .panel-close {
@@ -417,7 +442,7 @@
     right: 12px;
     background: none;
     border: none;
-    font-size: 22px;
+    font-size: 24px;
     color: #999;
     cursor: pointer;
     padding: 4px 8px;
@@ -430,9 +455,9 @@
     body { overflow: hidden; }
 
     header { padding: 10px 16px; }
-    header h1 { font-size: 18px; }
-    header h2 { font-size: 9px; letter-spacing: 3px; }
-    header .meta { font-size: 10px; }
+    header h1 { font-size: 20px; }
+    header h2 { font-size: 10px; letter-spacing: 3px; }
+    header .meta { font-size: 11px; }
 
     .toolbar {
       padding: 6px 10px;
@@ -441,7 +466,7 @@
     }
     .btn {
       padding: 8px 12px;
-      font-size: 11px;
+      font-size: 12px;
       min-height: 36px;
     }
     .legend { display: none; }
@@ -449,10 +474,10 @@
     #builder-legend {
       padding: 6px 10px;
       gap: 8px;
-      font-size: 9px;
+      font-size: 10px;
       justify-content: center;
     }
-    #builder-legend .legend-item { font-size: 9px; }
+    #builder-legend .legend-item { font-size: 10px; }
 
     .main { flex-direction: column; position: relative; }
 
@@ -495,25 +520,25 @@
     .zoom-btn {
       width: 44px;
       height: 44px;
-      font-size: 20px;
+      font-size: 22px;
     }
 
-    #plat-controls {
+    #plat-controls, #topo-controls {
       bottom: auto;
       top: 10px;
       left: 10px;
       max-width: calc(100vw - 20px);
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .stats-bar {
       padding: 6px 12px;
       gap: 12px;
-      font-size: 10px;
+      font-size: 11px;
       justify-content: center;
     }
 
-    .jwrg-watermark { width: 100px; bottom: 16px; right: 12px; }
+    .jwrg-watermark { width: 80px; bottom: 16px; right: 12px; }
   }
 </style>
 </head>
@@ -534,22 +559,23 @@
   <button class="btn" id="btn-reserved" onclick="setFilter('reserved')">Reserved</button>
   <button class="btn" title="Reset zoom" onclick="resetView()">Reset View</button>
   <button class="btn btn-overlay" id="btn-plat" onclick="togglePlatOverlay()" title="Toggle plat PDF overlay">Plat Overlay</button>
+  <button class="btn btn-topo-overlay" id="btn-topo" onclick="toggleTopoOverlay()" title="Toggle topo contour overlay">Topo Overlay</button>
   <button class="btn" id="btn-builders" onclick="toggleBuilderView()" title="Color lots by builder">Builders</button>
   <div class="legend">
-    <div class="legend-item"><div class="swatch" style="background:#ccd9b8"></div>Available</div>
-    <div class="legend-item"><div class="swatch" style="background:#e8c0b8"></div>Sold</div>
-    <div class="legend-item"><div class="swatch" style="background:#e8dca0"></div>Reserved</div>
+    <div class="legend-item"><svg class="swatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><rect width="14" height="14" fill="#ccd9b8"/><circle cx="7" cy="7" r="2.5" fill="#7a9a60"/></svg>Available</div>
+    <div class="legend-item"><svg class="swatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><rect width="14" height="14" fill="#e8c0b8"/><polygon points="7,2 12,7 7,12 2,7" fill="#c07060"/></svg>Sold</div>
+    <div class="legend-item"><svg class="swatch" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><rect width="14" height="14" fill="#e8dca0"/><polygon points="7,2 13,12 1,12" fill="#b09030"/></svg>Reserved</div>
   </div>
 </div>
 
 <div id="builder-legend">
-  <strong style="font-size:10px;color:#3a4a2e;letter-spacing:1px;text-transform:uppercase;margin-right:4px">Builders:</strong>
+  <strong style="font-size:11px;color:#3a4a2e;letter-spacing:1px;text-transform:uppercase;margin-right:4px">Builders:</strong>
   <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(0)"><div class="swatch" style="background:#4a80c4;border-color:#2a5a9a"></div>Pinnacle (2,6,13)</div>
   <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(1)"><div class="swatch" style="background:#c49040;border-color:#9a6a20"></div>Thadd Roberts (7,10,12)</div>
   <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(2)"><div class="swatch" style="background:#9060b8;border-color:#6a3a90"></div>Lilium (11,14,17)</div>
   <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(3)"><div class="swatch" style="background:#40a080;border-color:#207a58"></div>JW2 (4,9,15)</div>
   <div class="legend-item" style="display:flex;align-items:center;gap:5px" onclick="filterByBuilder(4)"><div class="swatch" style="background:#c06090;border-color:#903a68"></div>Colebrooke (3,8,16)</div>
-  <span style="margin-left:8px;color:#aaa;font-size:9px">(click to highlight)</span>
+  <span style="margin-left:8px;color:#aaa;font-size:10px">(click to highlight)</span>
 </div>
 
 <div class="main">
@@ -557,13 +583,11 @@
     <div class="zoom-controls">
       <button class="zoom-btn" title="Zoom in" onclick="adjustZoom(1.25)">+</button>
       <button class="zoom-btn" title="Zoom out" onclick="adjustZoom(0.8)">&minus;</button>
-      <button class="zoom-btn" title="Reset" onclick="resetView()" style="font-size:12px">&#8962;</button>
+      <button class="zoom-btn" title="Reset" onclick="resetView()" style="font-size:13px">&#8962;</button>
     </div>
 
     <div class="jwrg-watermark">
-      <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 94.75 23.65">
-        <path d="M46.05,2.86v15.27c0,1.46-1.18,2.64-2.64,2.64h-17.79V2.88h5.27v12.64h1.17c.64,0,1.16-.52,1.16-1.16v-6.24h5.27v7.39h1.14c.64,0,1.16-.52,1.16-1.16V2.86h5.27ZM15.35,2.86v5.27h2.68v6.24c0,.64-.52,1.16-1.16,1.16h-7.62c-.64,0-1.16-.52-1.16-1.16v-3.54H2.82l.02,7.33c0,1.45,1.18,2.63,2.64,2.63h15.17c1.46,0,2.64-1.18,2.64-2.64V2.86h-7.94ZM66.53,10.51h0c1.46,0,2.64-1.18,2.64-2.64v-2.37c0-1.46-1.18-2.64-2.64-2.64h-17.84v17.91h5.28v-4.95h8.77c.64,0,1.16.52,1.16,1.16v3.79h5.27v-7.62c0-1.46-1.18-2.64-2.64-2.64ZM62.75,10.5h-7.45c-.64,0-1.16-.52-1.16-1.16h0c0-.64.52-1.16,1.16-1.16h7.45c.64,0,1.16.52,1.16,1.16s-.52,1.16-1.16,1.16ZM91.93,10.74h-5.27v4.76h-8.75c-.64,0-1.16-.52-1.16-1.16v-4.76c0-.64.52-1.16,1.16-1.16h14.02V3.16h-17.8c-1.46,0-2.64,1.18-2.64,2.64v12.33c0,1.46,1.18,2.64,2.64,2.64h17.8v-10.02Z" fill="currentColor"/>
-      </svg>
+      <img src="svg/JWRG_Positive.svg" alt="JWRG">
     </div>
 
     <!-- Plat overlay fine-tune panel -->
@@ -575,7 +599,19 @@
       <label><span class="lbl">Y offset</span><input type="range" id="oc-dy" min="-150" max="150" value="26" oninput="updateOverlay()"><span class="val" id="v-dy">0</span></label>
       <label><span class="lbl">Rotate</span><input type="range" id="oc-rot" min="-15" max="15" value="0" step="0.5" oninput="updateOverlay()"><span class="val" id="v-rot">0°</span></label>
       <label><span class="lbl">Mirror</span><span style="display:flex;gap:10px;align-items:center;flex:1;padding-left:4px">H <input type="checkbox" id="oc-fliph" onchange="updateOverlay()"> &nbsp;V <input type="checkbox" id="oc-flipv" onchange="updateOverlay()"></span></label>
-      <button style="margin-top:6px;width:100%;padding:4px;font-size:10px;cursor:pointer;background:#3a4a2e;color:#fff;border:none;border-radius:4px" onclick="copyOverlaySettings()">Copy Settings</button>
+      <button style="margin-top:6px;width:100%;padding:4px;font-size:11px;cursor:pointer;background:#3a4a2e;color:#fff;border:none;border-radius:4px" onclick="copyOverlaySettings()">Copy Settings</button>
+    </div>
+
+    <!-- Topo overlay fine-tune panel -->
+    <div id="topo-controls">
+      <div class="ctrl-title">Topo Overlay</div>
+      <label><span class="lbl">Opacity</span><input type="range" id="tc-opacity" min="5" max="100" value="25" oninput="updateTopoOverlay()"><span class="val" id="tv-opacity">25%</span></label>
+      <label><span class="lbl">Scale</span><input type="range" id="tc-scale" min="80" max="120" value="100" oninput="updateTopoOverlay()"><span class="val" id="tv-scale">1.00</span></label>
+      <label><span class="lbl">X offset</span><input type="range" id="tc-dx" min="-150" max="150" value="0" oninput="updateTopoOverlay()"><span class="val" id="tv-dx">0</span></label>
+      <label><span class="lbl">Y offset</span><input type="range" id="tc-dy" min="-150" max="150" value="0" oninput="updateTopoOverlay()"><span class="val" id="tv-dy">0</span></label>
+      <label><span class="lbl">Rotate</span><input type="range" id="tc-rot" min="-15" max="15" value="0" step="0.5" oninput="updateTopoOverlay()"><span class="val" id="tv-rot">0°</span></label>
+      <label><span class="lbl">Mirror</span><span style="display:flex;gap:10px;align-items:center;flex:1;padding-left:4px">H <input type="checkbox" id="tc-fliph" onchange="updateTopoOverlay()"> &nbsp;V <input type="checkbox" id="tc-flipv" onchange="updateTopoOverlay()"></span></label>
+      <button style="margin-top:6px;width:100%;padding:4px;font-size:11px;cursor:pointer;background:#3a4a2e;color:#fff;border:none;border-radius:4px" onclick="copyTopoSettings()">Copy Settings</button>
     </div>
     <svg id="map-svg" viewBox="-20 -20 1240 1000" preserveAspectRatio="xMidYMid meet">
       <defs>
@@ -584,9 +620,44 @@
         </filter>
         <path id="lawrence-road-path" d="M 631,1018 L 776,830 L 867,704 L 913,621 L 944,553 L 1021,362 L 1171,-10"/>
         <path id="tennyson-court-path" d="M 300,422 L 400,420 L 500,421 L 580,424 L 650,440 L 720,468"/>
+        <!-- Available: staggered dots. scale(1) to resize -->
+        <pattern id="pat-available" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="scale(.5)">
+          <rect width="28" height="28" fill="#ccd9b8" fill-opacity="0.7"/>
+          <g fill="#ccd9b8">
+            <circle cx="7" cy="7" r="5"/>
+            <circle cx="21" cy="7" r="5"/>
+            <circle cx="0" cy="21" r="5"/>
+            <circle cx="14" cy="21" r="5"/>
+            <circle cx="28" cy="21" r="5"/>
+          </g>
+        </pattern>
+        <!-- Sold: diamonds (square rotated 45°). scale(1) to resize -->
+        <pattern id="pat-sold" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="scale(.5)">
+          <rect width="14" height="14" fill="#e8c0b8" fill-opacity="0.7"/>
+          <polygon points="7,1 13,7 7,13 1,7" fill="#e8c0b8"/>
+        </pattern>
+        <!-- Reserved: staggered equilateral triangles (s=16.17, h=14, g=2.74). scale(1) to resize -->
+        <pattern id="pat-reserved" x="0" y="0" width="28" height="33.48" patternUnits="userSpaceOnUse" patternTransform="scale(.5)">
+          <rect width="28" height="33.48" fill="#e8dca0" fill-opacity="0.7"/>
+          <g fill="#e8dca0">
+            <polygon points="7,1.37 15.09,15.37 -1.09,15.37"/>
+            <polygon points="21,15.37 12.91,1.37 29.09,1.37"/>
+            <polygon points="0,32.11 -8.09,18.11 8.09,18.11"/>
+            <polygon points="14,18.11 22.09,32.11 5.91,32.11"/>
+            <polygon points="28,32.11 19.91,18.11 36.09,18.11"/>
+          </g>
+        </pattern>
       </defs>
 
       <rect x="-20" y="-20" width="1240" height="1000" fill="#eae6dc" rx="4"/>
+
+      <!-- Topo contour overlay (background by default; moved to top of stack when active) -->
+      <image id="topo-overlay"
+        href="svg/Tennyson_TopoContour.svg"
+        x="0" y="0" width="689.11" height="548.13"
+        transform="matrix(1.8792,0,0,1.8792,-70.62,-128.57)"
+        opacity="0.025"
+        style="pointer-events:none;"/>
 
       <!-- Roads -->
       <g class="roads">
@@ -627,7 +698,7 @@
 
       <!-- Lots -->
       <g filter="url(#lotShadow)">
-        <polygon id="lot-1" points="734.1,723.5 837.9,570.7 837.9,570.7 897.2,611.0 894.5,616.5 891.7,621.9 888.9,627.4 886.1,632.8 883.3,638.2 880.4,643.6 877.4,649.0 874.5,654.3 871.5,659.6 868.5,664.9 865.4,670.2 862.3,675.5 859.2,680.8 856.1,686.0 852.9,691.2 849.6,696.4 846.4,701.6 843.1,706.7 839.8,711.9 836.4,717.0 833.1,722.1 829.6,727.2 826.2,732.2 822.7,737.2 819.2,742.2 815.7,747.2 812.1,752.2 808.5,757.1 804.9,762.0 801.2,766.9 797.5,771.8 793.8,776.6 793.8,776.6 761.2,818.7 763.1,754.2 763.1,754.2 734.1,723.5" class="lot available" data-lot="1" data-acres="1.1586"/>
+        <polygon id="lot-1" points="734.1,723.5 837.9,570.7 837.9,570.7 897.2,611.0 894.5,616.5 891.7,621.9 888.9,627.4 886.1,632.8 883.3,638.2 880.4,643.6 877.4,649.0 874.5,654.3 871.5,659.6 868.5,664.9 865.4,670.2 862.3,675.5 859.2,680.8 856.1,686.0 852.9,691.2 849.6,696.4 846.4,701.6 843.1,706.7 839.8,711.9 836.4,717.0 833.1,722.1 829.6,727.2 826.2,732.2 822.7,737.2 819.2,742.2 815.7,747.2 812.1,752.2 808.5,757.1 804.9,762.0 801.2,766.9 797.5,771.8 793.8,776.6 793.8,776.6 761.2,818.7 763.1,754.2 763.1,754.2 734.1,723.5" class="lot sold" data-lot="1" data-acres="1.1586"/>
         <polygon id="lot-2" points="693.0,680.0 693.0,680.0 683.9,658.0 683.9,658.0 773.1,526.8 837.9,570.7 837.9,570.7 837.9,570.7 734.1,723.5 693.0,680.0" class="lot available" data-lot="2" data-acres="0.9848"/>
         <polygon id="lot-3" points="683.9,658.0 673.8,633.6 673.8,633.6 614.6,627.1 600.4,628.9 702.4,478.8 702.4,478.8 773.1,526.7 773.1,526.7 773.1,526.8 683.9,658.0" class="lot available" data-lot="3" data-acres="0.9757"/>
         <polygon id="lot-4" points="702.4,478.8 702.4,478.8 600.4,628.9 600.4,628.9 562.5,633.6 612.4,437.1 612.4,437.1 615.2,437.8 618.0,438.6 620.9,439.4 623.6,440.2 626.4,441.1 629.2,442.0 632.0,442.9 634.8,443.8 637.5,444.8 640.2,445.8 643.0,446.8 645.7,447.9 648.4,449.0 651.1,450.1 653.8,451.3 656.4,452.4 659.1,453.7 661.7,454.9 664.4,456.2 667.0,457.5 669.6,458.8 672.2,460.1 674.7,461.5 677.3,462.9 679.8,464.4 682.3,465.8 684.9,467.3 687.3,468.8 689.8,470.4 692.3,472.0 694.7,473.6 697.1,475.2 697.1,475.2 702.4,478.8" class="lot available" data-lot="4" data-acres="0.9192"/>
@@ -635,7 +706,7 @@
         <polygon id="lot-6" points="524.5,634.6 457.7,604.6 458.4,428.5 525.3,428.7 525.3,428.8 525.3,428.8 524.5,634.6" class="lot available" data-lot="6" data-acres="0.919"/>
         <polygon id="lot-7" points="457.7,604.6 457.7,604.6 425.4,570.1 425.4,570.1 370.2,565.4 370.7,428.2 458.4,428.5 458.4,428.5 457.7,604.6" class="lot available" data-lot="7" data-acres="0.9251"/>
         <polygon id="lot-8" points="300.4,537.9 300.4,537.9 275.6,531.6 275.6,531.6 268.6,432.9 269.0,432.5 269.0,432.5 269.2,432.2 269.5,431.9 370.7,428.2 370.7,428.2 370.7,428.2 370.2,565.4 333.2,562.2 333.2,562.2 300.4,537.9" class="lot available" data-lot="8" data-acres="0.9198"/>
-        <polygon id="lot-9" points="275.6,531.6 228.2,519.6 228.2,519.6 146.4,485.6 124.5,459.8 106.5,406.9 106.8,399.0 106.9,399.0 219.9,410.6 221.8,418.8 224.4,425.7 227.7,431.3 231.6,435.5 236.1,438.4 241.3,439.9 247.2,440.2 253.7,439.1 260.8,436.6 268.6,432.9 275.6,531.6" class="lot available" data-lot="9" data-acres="0.927"/>
+        <polygon id="lot-9" points="275.6,531.6 228.2,519.6 228.2,519.6 146.4,485.6 124.5,459.8 106.5,406.9 106.8,399.0 106.9,399.0 219.9,410.6 221.8,418.8 224.4,425.7 227.7,431.3 231.6,435.5 236.1,438.4 241.3,439.9 247.2,440.2 253.7,439.1 260.8,436.6 268.6,432.9 275.6,531.6" class="lot sold" data-lot="9" data-acres="0.927"/>
         <polygon id="lot-10" points="208.2,308.5 259.1,312.7 280.0,305.7 278.9,399.5 278.5,399.5 278.1,399.5 267.7,393.3 266.2,392.0 264.6,390.7 262.9,389.6 261.1,388.5 259.3,387.7 257.4,386.9 255.4,386.3 253.4,385.8 251.4,385.5 249.4,385.3 247.3,385.3 245.3,385.4 243.3,385.7 241.3,386.1 239.3,386.7 237.4,387.4 235.5,388.2 233.7,389.2 232.0,390.2 230.4,391.5 228.8,392.8 227.4,394.2 226.0,395.8 224.8,397.4 223.7,399.1 222.7,400.9 221.9,402.8 221.1,404.7 220.6,406.6 220.1,408.6 219.9,410.6 219.9,410.6 219.9,410.6 106.9,399.0 106.9,399.0 108.5,366.4 129.4,341.9 182.6,331.2 208.2,308.5" class="lot available" data-lot="10" data-acres="0.9255"/>
         <polygon id="lot-11" points="369.1,276.1 394.9,282.6 394.9,282.6 394.2,400.0 394.2,400.0 394.2,400.0 279.6,399.6 279.6,399.6 279.6,399.6 279.2,399.5 278.9,399.5 280.0,305.7 280.0,305.7 369.1,276.1" class="lot available" data-lot="11" data-acres="0.9194"/>
         <polygon id="lot-12" points="469.6,247.2 469.6,247.2 486.9,243.9 486.3,400.4 394.2,400.0 394.2,400.0 394.9,282.6 394.9,282.6 469.6,247.2" class="lot available" data-lot="12" data-acres="0.9183"/>
@@ -721,6 +792,8 @@ let builderView = false, builderFilter = null;
 const statuses = {};
 LOT_DATA.forEach(l => statuses[l.id] = 'available');
 statuses[5] = 'reserved';
+statuses[1] = 'sold';
+statuses[9] = 'sold';
 let selectedId = null, currentFilter = 'all';
 let scale = 1, panX = 0, panY = 0, isPanning = false, startPX, startPY;
 const VB_W = 1240, VB_H = 1000;
@@ -805,23 +878,30 @@ function createBuilderDots() {
   const g = document.getElementById('builder-dots');
   if (g.children.length) return;
   const ns = 'http://www.w3.org/2000/svg';
-  document.querySelectorAll('.lot-label-group').forEach(lbl => {
-    const lotId = parseInt(lbl.dataset.lot);
+  const defs = document.querySelector('#map-svg defs');
+  document.querySelectorAll('[id^="lot-"]').forEach(lotEl => {
+    const lotId = parseInt(lotEl.id.replace('lot-', ''));
     const b = builderByLot[lotId];
     if (!b) return;
-    const textEl = lbl.querySelector('.lot-label-num');
-    const cx = parseFloat(textEl.getAttribute('x'));
-    const cy = parseFloat(textEl.getAttribute('y')) - 20;
-    const circle = document.createElementNS(ns, 'circle');
-    circle.setAttribute('cx', cx);
-    circle.setAttribute('cy', cy);
-    circle.setAttribute('r', 6);
-    circle.setAttribute('fill', b.color);
-    circle.setAttribute('stroke', b.border);
-    circle.setAttribute('stroke-width', 1.5);
-    circle.classList.add('builder-dot');
-    circle.dataset.lot = lotId;
-    g.appendChild(circle);
+    const points = lotEl.getAttribute('points');
+    // ClipPath confines the stroke to the lot interior (inner-aligned stroke)
+    const clipId = 'builder-clip-' + lotId;
+    const clipPath = document.createElementNS(ns, 'clipPath');
+    clipPath.setAttribute('id', clipId);
+    const clipPoly = document.createElementNS(ns, 'polygon');
+    clipPoly.setAttribute('points', points);
+    clipPath.appendChild(clipPoly);
+    defs.appendChild(clipPath);
+    // stroke-width 10 = 5 inner + 5 outer; clip removes outer half
+    const poly = document.createElementNS(ns, 'polygon');
+    poly.setAttribute('points', points);
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', b.color);
+    poly.setAttribute('stroke-width', 10);
+    poly.setAttribute('clip-path', 'url(#' + clipId + ')');
+    poly.classList.add('builder-dot');
+    poly.dataset.lot = lotId;
+    g.appendChild(poly);
   });
 }
 
@@ -894,6 +974,16 @@ function resetView() {
     document.getElementById('btn-plat').classList.remove('active');
     document.getElementById('plat-controls').style.display = 'none';
     document.querySelector('.labels').style.display = '';
+  }
+  // Return topo overlay to background
+  if (topoFg) {
+    topoFg = false;
+    const img = document.getElementById('topo-overlay');
+    const svg = document.getElementById('map-svg');
+    svg.insertBefore(img, svg.children[2]);
+    img.setAttribute('opacity', '0.1');
+    document.getElementById('btn-topo').classList.remove('active');
+    document.getElementById('topo-controls').style.display = 'none';
   }
 }
 
@@ -1017,6 +1107,81 @@ init();
 // SVG_y = 0.19610 * img_px_row + 257.78
 // SVG matrix(a,b,c,d,e,f): x'=a*x+c*y+e, y'=b*x+d*y+f
 // matrix(a,0,0,a,tx,ty): svg_x = a*png_x + tx, svg_y = a*png_y + ty
+const TOPO_BASE_SX = 1.8792;
+const TOPO_BASE_SY = 1.8792;
+const TOPO_BASE_TX = -70.62;
+const TOPO_BASE_TY = -128.57;
+const TOPO_CX = 555, TOPO_CY = 513;
+
+let topoFg = false;
+
+function toggleTopoOverlay() {
+  topoFg = !topoFg;
+  const img = document.getElementById('topo-overlay');
+  const svg = document.getElementById('map-svg');
+  const btn = document.getElementById('btn-topo');
+  const panel = document.getElementById('topo-controls');
+  btn.classList.toggle('active', topoFg);
+  panel.style.display = topoFg ? 'block' : 'none';
+  if (topoFg) {
+    svg.appendChild(img);
+    updateTopoOverlay();
+  } else {
+    svg.insertBefore(img, svg.children[2]);
+    img.setAttribute('opacity', '0.1');
+  }
+}
+
+function copyTopoSettings() {
+  const s = {
+    opacity: document.getElementById('tc-opacity').value,
+    scale: document.getElementById('tc-scale').value,
+    dx: document.getElementById('tc-dx').value,
+    dy: document.getElementById('tc-dy').value,
+    rot: document.getElementById('tc-rot').value,
+    flipH: document.getElementById('tc-fliph').checked,
+    flipV: document.getElementById('tc-flipv').checked
+  };
+  const text = `opacity="${s.opacity}" scale="${s.scale}" dx="${s.dx}" dy="${s.dy}" rot="${s.rot}" flipH=${s.flipH} flipV=${s.flipV}`;
+  console.log('Topo overlay settings:', text);
+  const btn = document.querySelector('#topo-controls button');
+  try {
+    navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied!';
+  } catch(e) {
+    window.prompt('Copy these settings:', text);
+  }
+  setTimeout(() => btn.textContent = 'Copy Settings', 2000);
+}
+
+function updateTopoOverlay() {
+  const opacity = +document.getElementById('tc-opacity').value / 100;
+  const scale   = +document.getElementById('tc-scale').value / 100;
+  const dx      = +document.getElementById('tc-dx').value;
+  const dy      = +document.getElementById('tc-dy').value;
+  const rot     = +document.getElementById('tc-rot').value;
+  const flipH   = document.getElementById('tc-fliph').checked ? -1 : 1;
+  const flipV   = document.getElementById('tc-flipv').checked ? -1 : 1;
+
+  document.getElementById('tv-opacity').textContent = Math.round(opacity*100) + '%';
+  document.getElementById('tv-scale').textContent   = scale.toFixed(2);
+  document.getElementById('tv-dx').textContent      = dx;
+  document.getElementById('tv-dy').textContent      = dy;
+  document.getElementById('tv-rot').textContent     = rot + '°';
+
+  const sx = TOPO_BASE_SX * scale;
+  const sy = TOPO_BASE_SY * scale;
+  const tx = TOPO_BASE_TX * scale + (1 - scale) * TOPO_CX + dx;
+  const ty = TOPO_BASE_TY * scale + (1 - scale) * TOPO_CY + dy;
+  const base = `matrix(${sx},0,0,${sy},${tx},${ty})`;
+
+  const pre = `translate(${TOPO_CX},${TOPO_CY}) rotate(${rot}) scale(${flipH},${flipV}) translate(${-TOPO_CX},${-TOPO_CY})`;
+
+  const img = document.getElementById('topo-overlay');
+  img.setAttribute('transform', `${pre} ${base}`);
+  img.setAttribute('opacity', opacity);
+}
+
 const BASE_SX = 0.3768;   // png_x → SVG_x scale
 const BASE_SY = 0.3768;   // png_y → SVG_y scale
 const BASE_TX = -119;     // SVG_x translation
