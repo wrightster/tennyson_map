@@ -4,28 +4,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a single-file interactive real estate lot map for **Tennyson — Phase One**, a residential subdivision with 18 lots. The primary deliverable is `tennyson-map.html` — a standalone HTML file that requires no build step, bundler, or server.
+This is an interactive real estate lot map for **Tennyson — Phase One**, a residential subdivision with 18 lots. The primary deliverable is `tennyson-map.html` — a standalone HTML file that requires no build step, bundler, or server.
 
-To preview: open `tennyson-map.html` directly in a browser (or serve via any static file server).
+**To preview:** open `tennyson-map.html` directly in a browser — no server needed. SVG geometry and lot data are embedded inline as `<script>` data blocks.
 
 ## Architecture
 
-Everything lives in `tennyson-map.html` — CSS, SVG map, and JavaScript are all inline. There is no separate JS or CSS file. The file structure:
+The project is now split into three runtime files:
 
-1. **CSS** (lines 7–543): Styles for layout, lot states (available/sold/reserved), overlays, mobile responsive layout
-2. **HTML body** (lines 545–777): Header, toolbar buttons, SVG map, info panel, stats bar
-3. **Inline SVG map** (lines 616–750): Hand-placed polygon coordinates for roads, streams, easements, 18 lots, and labels — all in SVG user-space (~1200×960 units)
-4. **JavaScript** (lines 778–1257): All interactivity — lot selection, status management, pan/zoom, builder view, plat/topo overlay controls
-5. **External script** (line 1258–1262): JWRG contact form loaded from `https://office.jwrgnc.com/js/forms.js`
+- **`tennyson-map.html`** — layout, CSS, and JavaScript
+- **`tennyson-map.svg`** — static SVG geometry (roads, streams, easements, lot polygons, labels)
+- **`tennyson-lots.csv`** — lot data (acreage, status, builder assignments)
+
+### `tennyson-map.html` structure:
+
+1. **CSS** (lines 7–560): Styles for layout, lot states (available/sold/reserved), overlays, mobile responsive layout, `#map-svg-container` sizing
+2. **HTML body** (lines 562–660): Header, toolbar buttons, `#map-svg-container` placeholder, info panel, stats bar
+3. **JavaScript** (lines 663–1230): All interactivity — `loadResources()`, `parseCSV()`, `rebuildFromCSV()`, `populateLabels()`, `rebuildBuilderLegend()`, `init()`, lot selection, status management, pan/zoom, builder view, plat/topo overlay controls
+4. **External script**: JWRG contact form from `https://office.jwrgnc.com/js/forms.js`
+
+### Load sequence:
+
+1. `loadResources()` reads `#map-svg-src` and `#lots-data` script block content (synchronous, no fetch)
+2. SVG is injected into `#map-svg-container` via `innerHTML`
+3. CSV rows are parsed → `LOT_DATA`, `BUILDER_DATA`, `statuses`, `builderByLot` are built
+4. Lot label text populated from CSV, builder legend HTML rebuilt
+5. Status classes applied to lot polygons, `init()` called
+
+### Embedded data blocks (end of `<body>`):
+
+- `<script id="lots-data" type="text/csv">` — lot data in CSV format; browser ignores this as a script. **Edit this to update statuses, acreage, and builders.** Also update `tennyson-lots.csv` to keep the companion file in sync.
+- `<script id="map-svg-src" type="image/svg+xml">` — full SVG geometry. Edit `tennyson-map.svg` for geometry changes, then copy its content here.
 
 ## Key Data Structures
 
-- **`LOT_DATA`**: Array of `{id, acres}` for all 18 lots
-- **`BUILDER_DATA`**: Array of builder objects with `{name, short, contact, address, phone, email, lots[], color, border}` — maps builders to their assigned lot IDs
-- **`statuses`**: Object mapping lot ID → `'available'|'sold'|'reserved'` (initialized in JS; lots 1 and 9 are `sold`, lot 5 is `reserved` by default)
+- **`LOT_DATA`**: Array of `{id, acres}` for all 18 lots (built from CSV)
+- **`BUILDER_DATA`**: Array of builder objects with `{name, short, contact, address, phone, email, lots[], color, border}` (built from CSV; deduplicated by builder name)
+- **`statuses`**: Object mapping lot ID → `'available'|'sold'|'reserved'` (built from CSV)
+- **`builderByLot`**: Object mapping lot ID → builder object
 
 ## Assets
 
+- `tennyson-map.svg` — standalone SVG with all map geometry; lot polygons have `data-lot` and `data-lot-id` attributes, label text is empty (populated by JS from CSV)
+- `tennyson-lots.csv` — one row per lot; columns: `lot_id, lot_number, acres, status, builder_name, builder_short, builder_contact, builder_address, builder_phone, builder_email, builder_color, builder_border`
 - `plat_full.png` — 3600×2700px plat PDF scan, used as a togglable overlay
 - `svg/Tennyson_TopoContour.svg` — topo contour overlay
 - `svg/JWRG_Positive.svg` — JWRG watermark logo
@@ -49,8 +70,8 @@ At `max-width: 768px`, the info panel becomes a bottom sheet (slides up from bot
 
 ## Modifying Lot Statuses
 
-To change which lots start as sold/reserved, edit the `statuses` object initialization at lines 793–796. Status classes (`available`, `sold`, `reserved`) on the lot `<polygon>` elements are cosmetic initial values — JS overrides them on `init()`.
+Edit the `<script id="lots-data" type="text/csv">` block near the end of `tennyson-map.html` — change the `status` column to `available`, `sold`, or `reserved`. Also update `tennyson-lots.csv` to keep the companion file in sync. Reload the page to see the change (works with `file://`).
 
 ## Adding/Changing Builders
 
-Edit the `BUILDER_DATA` array. Each builder entry needs a `lots` array with the lot IDs they own. Builder colored strokes are generated dynamically via `createBuilderDots()`.
+Edit the builder columns in the `lots-data` CSV block. Builder info is repeated per lot row; JS deduplicates by `builder_name`. The builder legend and colored strokes (`createBuilderDots()`) are generated dynamically from the rebuilt `BUILDER_DATA`.
