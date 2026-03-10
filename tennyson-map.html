@@ -57,6 +57,22 @@
     letter-spacing: 1px;
   }
 
+  .map-toolbar,
+  #builder-legend,
+  .zoom-controls,
+  #plat-controls,
+  #topo-controls {
+    opacity: 0.75;
+    transition: opacity 0.2s;
+  }
+  .map-toolbar:hover,
+  #builder-legend:hover,
+  .zoom-controls:hover,
+  #plat-controls:hover,
+  #topo-controls:hover {
+    opacity: 1;
+  }
+
   .map-toolbar {
     position: absolute;
     top: 12px;
@@ -68,11 +84,22 @@
     background: rgba(255,255,255,0.92);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border-radius: 24px;
-    padding: 6px 10px;
+    border-radius: 8px;
+    padding: 5px 8px;
+    gap: 4px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.18);
     z-index: 10;
     white-space: nowrap;
+  }
+  .toolbar-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #3a4a2e;
+    padding-right: 4px;
+    border-right: 1px solid #ddd;
+    margin-right: 2px;
   }
   .map-toolbar-sep {
     width: 1px;
@@ -81,8 +108,8 @@
     margin: 0 2px;
   }
   .btn {
-    padding: 5px 14px;
-    border-radius: 20px;
+    padding: 3px 12px;
+    border-radius: 6px;
     border: 1.5px solid #c5bfb2;
     background: #fff;
     cursor: pointer;
@@ -174,7 +201,7 @@
     stroke: #8a9e72;
     stroke-width: 1.5;
     cursor: pointer;
-    transition: fill 0.15s, stroke-width 0.15s;
+    transition: fill 0.15s, stroke-width 0.15s, opacity 0.25s;
   }
   .lot:hover {
     fill: #b8cda0;
@@ -313,7 +340,9 @@
     color: #555;
     flex-shrink: 0;
   }
+  .zoom-btn { transition: background 0.12s, border-color 0.12s, transform 0.1s; }
   .zoom-btn:hover { background: #f0f4e8; border-color: #3a4a2e; color: #3a4a2e; }
+  .zoom-btn:active { transform: scale(0.85); }
   .zoom-lbl {
     font-family: 'Jost', sans-serif;
     font-size: 11px;
@@ -386,13 +415,15 @@
   /* Builder lot strokes */
   .builder-dot {
     pointer-events: none;
-    display: none;
+    opacity: 0;
+    transition: opacity 0.3s;
   }
-  .builder-dot.show { display: block; }
+  .builder-dot.show { opacity: 1; }
   .builder-dot.dimmed { opacity: 0.15; }
+  #plat-overlay, #topo-overlay { transition: opacity 0.35s; }
 
   #builder-legend {
-    display: none;
+    display: flex;
     position: absolute;
     top: 12px;
     left: 12px;
@@ -404,15 +435,54 @@
     padding: 10px 14px;
     z-index: 10;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     font-size: 12px;
     color: #555;
     letter-spacing: 0.3px;
     min-width: 140px;
   }
-  #builder-legend.show { display: flex; }
-  #builder-legend .legend-item { gap: 8px; cursor: pointer; align-items: center; }
+  .legend-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #3a4a2e;
+    margin-bottom: 2px;
+  }
+  .legend-overlay-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .legend-overlay-item:hover { color: #3a4a2e; }
+  .legend-overlay-item input[type=checkbox] { cursor: pointer; accent-color: #3a4a2e; }
+  #builder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    max-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  #builder-list.open {
+    max-height: 300px;
+    margin-top: 3px;
+    padding-top: 6px;
+    border-top: 1px solid #e0ddd6;
+  }
+  #builder-legend .legend-item {
+    display: flex;
+    gap: 8px;
+    cursor: pointer;
+    align-items: center;
+    user-select: none;
+  }
   #builder-legend .legend-item:hover { color: #3a4a2e; }
+  #builder-legend .legend-item input[type=checkbox] { cursor: pointer; accent-color: #3a4a2e; }
 
   .builder-block {
     margin-top: 14px;
@@ -595,17 +665,18 @@
 <div class="main">
   <div class="map-wrap" id="map-wrap">
     <div class="map-toolbar">
+      <span class="toolbar-title">Lot Status</span>
       <button class="btn active" id="btn-all" onclick="setFilter('all')">All</button>
       <button class="btn" id="btn-available" onclick="setFilter('available')">Available</button>
       <button class="btn" id="btn-sold" onclick="setFilter('sold')">Sold</button>
       <button class="btn" id="btn-reserved" onclick="setFilter('reserved')">Reserved</button>
-      <div class="map-toolbar-sep"></div>
-      <button class="btn btn-overlay" id="btn-plat" onclick="togglePlatOverlay()" title="Toggle plat PDF overlay">Plat</button>
-      <button class="btn btn-topo-overlay" id="btn-topo" onclick="toggleTopoOverlay()" title="Toggle topo contour overlay">Topo</button>
-      <button class="btn" id="btn-builders" onclick="toggleBuilderView()" title="Color lots by builder">Builders</button>
     </div>
     <div id="builder-legend">
-      <div style="font-size:10px;color:#3a4a2e;letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-bottom:2px">Builders</div>
+      <div class="legend-title">Overlays</div>
+      <label class="legend-overlay-item"><input type="checkbox" id="cb-plat" onchange="togglePlatOverlay()"> Plat</label>
+      <label class="legend-overlay-item"><input type="checkbox" id="cb-topo" onchange="toggleTopoOverlay()"> Topo</label>
+      <label class="legend-overlay-item"><input type="checkbox" id="cb-builders" onchange="toggleBuilderView()"> Builders</label>
+      <div id="builder-list"></div>
     </div>
     <div class="zoom-controls">
       <div class="zoom-row"><button class="zoom-btn" title="Zoom in" onclick="adjustZoom(1.25)">+</button><span class="zoom-lbl">Zoom In</span></div>
@@ -671,9 +742,30 @@
 
 <script>
 let LOT_DATA = [], BUILDER_DATA = [], builderByLot = {}, statuses = {};
-let builderView = false, builderFilter = null;
+let builderView = false;
 let selectedId = null, currentFilter = 'all';
 let scale = 1.2009865115336706, panX = -99.12704415773533, panY = -109.15939821558845, isPanning = false, startPX, startPY;
+let _zoomAnimating = false, _zoomAnimStart = null;
+let _zoomFrom = {}, _zoomTo = {};
+const ZOOM_ANIM_MS = 260;
+
+function zoomTo(newScale, newPanX, newPanY) {
+  _zoomFrom = { scale, panX, panY };
+  _zoomTo   = { scale: newScale, panX: newPanX, panY: newPanY };
+  _zoomAnimStart = null;
+  if (!_zoomAnimating) { _zoomAnimating = true; requestAnimationFrame(_zoomStep); }
+}
+function _zoomStep(ts) {
+  if (!_zoomAnimStart) _zoomAnimStart = ts;
+  const t = Math.min((ts - _zoomAnimStart) / ZOOM_ANIM_MS, 1);
+  const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+  scale = _zoomFrom.scale + (_zoomTo.scale - _zoomFrom.scale) * e;
+  panX  = _zoomFrom.panX  + (_zoomTo.panX  - _zoomFrom.panX)  * e;
+  panY  = _zoomFrom.panY  + (_zoomTo.panY  - _zoomFrom.panY)  * e;
+  applyTransform();
+  if (t < 1) { requestAnimationFrame(_zoomStep); }
+  else { scale = _zoomTo.scale; panX = _zoomTo.panX; panY = _zoomTo.panY; _zoomAnimating = false; }
+}
 const VB_W = 1240, VB_H = 1000;
 
 // ── CSV parser (handles quoted fields) ────────────────────────────
@@ -734,15 +826,13 @@ function populateLabels(rows) {
 
 // ── Rebuild builder legend HTML from BUILDER_DATA ─────────────────
 function rebuildBuilderLegend() {
-  const legend = document.getElementById('builder-legend');
-  const header = legend.querySelector('div');
-  [...legend.children].forEach(el => { if (el !== header) el.remove(); });
+  const list = document.getElementById('builder-list');
+  list.innerHTML = '';
   BUILDER_DATA.forEach((b, idx) => {
-    const div = document.createElement('div');
-    div.className = 'legend-item';
-    div.onclick = () => filterByBuilder(idx);
-    div.innerHTML = `<div class="swatch" style="background:${b.color};border-color:${b.border}"></div>${b.short}`;
-    legend.appendChild(div);
+    const label = document.createElement('label');
+    label.className = 'legend-item';
+    label.innerHTML = `<input type="checkbox" class="builder-cb" data-idx="${idx}" checked onchange="applyBuilderFilter()"><div class="swatch" style="background:${b.color};border-color:${b.border}"></div>${b.short}`;
+    list.appendChild(label);
   });
 }
 
@@ -826,26 +916,23 @@ function setStatus(status) {
 }
 
 function toggleBuilderView() {
-  builderView = !builderView;
-  builderFilter = null;
-  document.getElementById('btn-builders').classList.toggle('active', builderView);
-  document.getElementById('builder-legend').classList.toggle('show', builderView);
+  builderView = document.getElementById('cb-builders').checked;
+  document.getElementById('builder-list').classList.toggle('open', builderView);
   applyBuilderColors();
+  if (builderView) applyBuilderFilter();
 }
 
-function filterByBuilder(idx) {
+function applyBuilderFilter() {
   if (!builderView) return;
-  builderFilter = (builderFilter === idx) ? null : idx;
+  const checkedIdxs = new Set(
+    [...document.querySelectorAll('.builder-cb:checked')].map(cb => +cb.dataset.idx)
+  );
   document.querySelectorAll('.builder-dot').forEach(dot => {
     const id = parseInt(dot.dataset.lot);
-    const lotBuilder = builderByLot[id];
-    if (builderFilter === null) {
-      dot.classList.remove('dimmed');
-    } else if (idx >= 0) {
-      dot.classList.toggle('dimmed', lotBuilder !== BUILDER_DATA[idx]);
-    } else {
-      dot.classList.toggle('dimmed', lotBuilder !== undefined);
-    }
+    const b = builderByLot[id];
+    if (!b) return;
+    const idx = BUILDER_DATA.indexOf(b);
+    dot.classList.toggle('dimmed', !checkedIdxs.has(idx));
   });
 }
 
@@ -890,7 +977,7 @@ function applyBuilderColors() {
 
 function setFilter(filter) {
   currentFilter = filter;
-  document.querySelectorAll('.toolbar .btn[id^="btn-"]:not(#btn-builders):not(#btn-plat)').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#btn-all, #btn-available, #btn-sold, #btn-reserved').forEach(b => b.classList.remove('active'));
   document.getElementById('btn-' + filter).classList.add('active');
   applyFilter(filter);
 }
@@ -919,12 +1006,12 @@ function adjustZoom(factor) {
   const svg = document.getElementById('map-svg');
   const rect = svg.getBoundingClientRect();
   const cx = rect.width/2, cy = rect.height/2;
-  const old = scale;
-  scale = Math.min(Math.max(scale*factor, 0.3), 10);
-  const r = scale/old;
-  panX = cx - r*(cx - panX);
-  panY = cy - r*(cy - panY);
-  applyTransform();
+  const curScale = _zoomAnimating ? _zoomTo.scale : scale;
+  const curPanX  = _zoomAnimating ? _zoomTo.panX  : panX;
+  const curPanY  = _zoomAnimating ? _zoomTo.panY  : panY;
+  const newScale = Math.min(Math.max(curScale * factor, 0.3), 10);
+  const r = newScale / curScale;
+  zoomTo(newScale, cx - r*(cx - curPanX), cy - r*(cy - curPanY));
 }
 
 function copyView() {
@@ -938,16 +1025,14 @@ function copyView() {
 }
 
 function resetView() {
-  scale = 1.2009865115336706; panX = -99.12704415773533; panY = -109.15939821558845;
-  applyTransform();
+  zoomTo(1.2009865115336706, -99.12704415773533, -109.15939821558845);
   // Reset status filter to "All"
   setFilter('all');
   // Turn off builders
   if (builderView) {
     builderView = false;
-    builderFilter = null;
-    document.getElementById('btn-builders').classList.remove('active');
-    document.getElementById('builder-legend').classList.remove('show');
+    document.getElementById('cb-builders').checked = false;
+    document.getElementById('builder-list').classList.remove('open');
     document.querySelectorAll('.builder-dot').forEach(dot => {
       dot.classList.remove('show', 'dimmed');
     });
@@ -955,19 +1040,19 @@ function resetView() {
   // Turn off plat overlay
   if (platVisible) {
     platVisible = false;
+    document.getElementById('cb-plat').checked = false;
     document.getElementById('plat-overlay').style.display = 'none';
-    document.getElementById('btn-plat').classList.remove('active');
     document.getElementById('plat-controls').style.display = 'none';
     document.querySelector('.labels').style.display = '';
   }
   // Return topo overlay to background
   if (topoFg) {
     topoFg = false;
+    document.getElementById('cb-topo').checked = false;
     const img = document.getElementById('topo-overlay');
     const svg = document.getElementById('map-svg');
     svg.insertBefore(img, svg.children[2]);
-    img.setAttribute('opacity', '0.1');
-    document.getElementById('btn-topo').classList.remove('active');
+    img.style.opacity = '0.1';
     document.getElementById('topo-controls').style.display = 'none';
   }
 }
@@ -1091,19 +1176,18 @@ const TOPO_CX = 555, TOPO_CY = 513;
 let topoFg = false;
 
 function toggleTopoOverlay() {
-  topoFg = !topoFg;
+  topoFg = document.getElementById('cb-topo').checked;
   const img = document.getElementById('topo-overlay');
   const svg = document.getElementById('map-svg');
-  const btn = document.getElementById('btn-topo');
   const panel = document.getElementById('topo-controls');
-  btn.classList.toggle('active', topoFg);
   panel.style.display = topoFg ? 'block' : 'none';
   if (topoFg) {
+    img.style.opacity = '0';
     svg.appendChild(img);
-    updateTopoOverlay();
+    requestAnimationFrame(() => requestAnimationFrame(() => updateTopoOverlay()));
   } else {
-    svg.insertBefore(img, svg.children[2]);
-    img.setAttribute('opacity', '0.1');
+    img.style.opacity = '0.1';
+    setTimeout(() => { if (!topoFg) svg.insertBefore(img, svg.children[2]); }, 400);
   }
 }
 
@@ -1154,7 +1238,7 @@ function updateTopoOverlay() {
 
   const img = document.getElementById('topo-overlay');
   img.setAttribute('transform', `${pre} ${base}`);
-  img.setAttribute('opacity', opacity);
+  img.style.opacity = opacity;
 }
 
 const BASE_SX = 0.3768;   // png_x → SVG_x scale
@@ -1167,15 +1251,19 @@ const OV_CX = 555, OV_CY = 513;
 let platVisible = false;
 
 function togglePlatOverlay() {
-  platVisible = !platVisible;
+  platVisible = document.getElementById('cb-plat').checked;
   const img = document.getElementById('plat-overlay');
-  const btn = document.getElementById('btn-plat');
   const panel = document.getElementById('plat-controls');
-  img.style.display = platVisible ? 'block' : 'none';
-  btn.classList.toggle('active', platVisible);
   panel.style.display = platVisible ? 'block' : 'none';
   document.querySelector('.labels').style.display = platVisible ? 'none' : '';
-  if (platVisible) updateOverlay();
+  if (platVisible) {
+    img.style.display = 'block';
+    img.style.opacity = '0';
+    requestAnimationFrame(() => updateOverlay());
+  } else {
+    img.style.opacity = '0';
+    setTimeout(() => { if (!platVisible) img.style.display = 'none'; }, 400);
+  }
 }
 
 function copyOverlaySettings() {
@@ -1227,7 +1315,7 @@ function updateOverlay() {
 
   const img = document.getElementById('plat-overlay');
   img.setAttribute('transform', `${pre} ${base}`);
-  img.setAttribute('opacity', opacity);
+  img.style.opacity = opacity;
 }
 </script>
 <script
