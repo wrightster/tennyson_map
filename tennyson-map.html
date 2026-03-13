@@ -1152,7 +1152,7 @@
   }
   .exp-res-row input[type=number]:focus { outline: none; border-color: #3a4a2e; }
   .exp-res-hint { font-size: 11px; color: #bbb; }
-  .exp-bw-row { display: flex; align-items: center; margin-bottom: 18px; margin-top: 14px; }
+  .exp-bw-row { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; margin-top: 14px; }
   .exp-bw-row label {
     font-size: 13px;
     color: #555;
@@ -1342,9 +1342,9 @@
     <div id="plat-controls">
       <div class="ctrl-title">Plat Overlay</div>
       <label><span class="lbl">Opacity</span><input type="range" id="oc-opacity" min="5" max="100" value="50" oninput="updateOverlay()"><span class="val" id="v-opacity">50%</span></label>
-      <label><span class="lbl">Scale</span><input type="range" id="oc-scale" min="80" max="120" value="100" oninput="updateOverlay()"><span class="val" id="v-scale">1.00</span></label>
-      <label><span class="lbl">X offset</span><input type="range" id="oc-dx" min="-150" max="150" value="0" oninput="updateOverlay()"><span class="val" id="v-dx">0</span></label>
-      <label><span class="lbl">Y offset</span><input type="range" id="oc-dy" min="-150" max="150" value="0" oninput="updateOverlay()"><span class="val" id="v-dy">0</span></label>
+      <label><span class="lbl">Scale</span><input type="range" id="oc-scale" min="80" max="120" value="94" oninput="updateOverlay()"><span class="val" id="v-scale">0.94</span></label>
+      <label><span class="lbl">X offset</span><input type="range" id="oc-dx" min="-150" max="150" value="-35" oninput="updateOverlay()"><span class="val" id="v-dx">-35</span></label>
+      <label><span class="lbl">Y offset</span><input type="range" id="oc-dy" min="-150" max="150" value="-26" oninput="updateOverlay()"><span class="val" id="v-dy">-26</span></label>
       <label><span class="lbl">Rotate</span><input type="range" id="oc-rot" min="-15" max="15" value="0" step="0.5" oninput="updateOverlay()"><span class="val" id="v-rot">0°</span></label>
       <label><span class="lbl">Mirror</span><span style="display:flex;gap:10px;align-items:center;flex:1;padding-left:4px">H <input type="checkbox" id="oc-fliph" onchange="updateOverlay()"> &nbsp;V <input type="checkbox" id="oc-flipv" onchange="updateOverlay()"></span></label>
       <button style="margin-top:6px;width:100%;padding:4px;font-size:11px;cursor:pointer;background:#3a4a2e;color:#fff;border:none;border-radius:4px" onclick="copyOverlaySettings()">Copy Settings</button>
@@ -1425,6 +1425,7 @@
 
     <div class="exp-bw-row">
       <label><input type="checkbox" id="exp-bw"> Black &amp; White</label>
+      <label><input type="checkbox" id="exp-topo-bg" checked> Topo background</label>
     </div>
 
     <div class="exp-actions">
@@ -3432,32 +3433,19 @@ function updateOverlay() {
 
 // ── Export / Print ─────────────────────────────────────────────────
 
-const EXPORT_CSS = [
-  "@import url('https://fonts.googleapis.com/css2?Radley:ital@0;1&family=Jost:wght@300;400;500;600&display=swap')",
-  ".lot{fill:#ccd9b8;stroke:#8a9e72;stroke-width:1.5}",
-  ".lot.available{fill:url(#pat-available)}",
-  ".lot.sold{fill:url(#pat-sold)}",
-  ".lot.reserved{fill:url(#pat-reserved)}",
-  ".lot.dimmed{opacity:0.2}",
-  ".lot-label-group{pointer-events:none}",
-  ".lot-label-num{font-family:'Jost',sans-serif;font-size:16px;font-weight:600;fill:#3a4a2e;text-anchor:middle;dominant-baseline:middle;letter-spacing:0.5px}",
-  ".lot-label-acres{font-family:'Jost',sans-serif;font-size:9px;font-weight:400;fill:#6b7a5a;text-anchor:middle;dominant-baseline:middle}",
-  ".lot-boundary{fill:none;stroke:#9a9080;stroke-width:0.75}",
-  ".plat-line{fill:none;stroke:#aaa090;stroke-width:0.75;stroke-dasharray:5,4;opacity:0.7}",
-  ".road-fill{fill:none;stroke:#cac4b4;stroke-width:42;stroke-linecap:round;stroke-linejoin:round}",
-  ".road-edge{fill:none;stroke:#b5ad9e;stroke-width:1;stroke-linecap:round;stroke-linejoin:round}",
-  ".stream-tob{fill:none;stroke:#7aabbf;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}",
-  ".stream-buffer{fill:none;stroke:#7aabbf;stroke-width:1;stroke-dasharray:6,3;opacity:0.6}",
-  ".easement{fill:none;stroke:#e6a800;stroke-width:1.5;stroke-dasharray:5,3;opacity:0.5}",
-  ".esmt{stroke:darkorange;stroke-width:2;stroke-dasharray:6 3;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}",
-  ".esmt-open{fill:none}",
-  ".esmt-closed{fill:darkorange;fill-opacity:0.25}",
-  ".road-interior{fill:#cac4b4;stroke:none}",
-  ".road-label{font-family:'Jost',sans-serif;font-size:13px;font-weight:500;fill:#8a8274;letter-spacing:3px;text-transform:uppercase}",
-  ".builder-dot{opacity:0}",
-  ".builder-dot.show{opacity:1}",
-  ".builder-dot.dimmed{opacity:0.15}"
-].join('\n');
+// Fetch map-styles.css and strip interactive-only sections for export
+async function _getMapStylesCSS() {
+  const fontImport = "@import url('https://fonts.googleapis.com/css2?family=Radley:ital@0;1&family=Jost:wght@300;400;500;600&display=swap');";
+  try {
+    const text = await fetch('map-styles.css', {cache: 'no-store'}).then(r => r.text());
+    // Everything from "Edit mode" onward is interactive-only — drop it
+    const cutAt = text.indexOf('/* ── Edit mode');
+    const mapCss = cutAt > 0 ? text.slice(0, cutAt).trimEnd() : text;
+    return fontImport + '\n' + mapCss;
+  } catch(e) {
+    return fontImport;
+  }
+}
 
 let exportFmt = 'png';
 let exportBg  = 'shaded';
@@ -3465,8 +3453,8 @@ let exportBg  = 'shaded';
 // B&W overrides applied on top of EXPORT_CSS when bw=true
 const EXPORT_CSS_BW = [
   ".lot{fill:#ffffff;stroke:#000000;stroke-width:1.5}",
-  ".road-fill{stroke:none}",
-  ".road-interior{fill:none}",
+  ".road-fill{fill:none;stroke:#ffffff;stroke-width:42;stroke-linecap:round;stroke-linejoin:round}",
+  ".road-interior{fill:#ffffff}",
   ".road-edge{stroke:#000000;stroke-width:2}",
   ".road-label{fill:#000000}",
   // White outer stroke + hard drop shadow on lot labels for legibility
@@ -3477,12 +3465,6 @@ const EXPORT_CSS_BW = [
   ".easement{stroke:#000000}",
   ".esmt{stroke:#000000}",
   ".esmt-closed{fill:#aaaaaa;fill-opacity:0.25}",
-].join('\n');
-
-// Transparent background: give roads a white fill so they remain visible
-const EXPORT_CSS_TRANSP_ROADS = [
-  ".road-fill{fill:none;stroke:#ffffff;stroke-width:42;stroke-linecap:round;stroke-linejoin:round}",
-  ".road-interior{fill:#ffffff}",
 ].join('\n');
 
 function openSaveAsModal() {
@@ -3597,9 +3579,22 @@ async function _buildExportSVG(bw) {
   });
   await _inlineImages(clone);
 
-  // Always show background topo in exports; also bake in overlay if active
+  // Show background topo in exports if enabled; also bake in overlay if active
+  const showTopoBg = document.getElementById('exp-topo-bg')?.checked !== false;
   const topoBg = clone.querySelector('#topo-bg');
-  if (topoBg) { topoBg.setAttribute('opacity', '0.1'); topoBg.style.opacity = ''; }
+  if (topoBg) {
+    const liveBg = document.getElementById('topo-bg');
+    const liveBgOpacity = parseFloat(liveBg?.style.opacity) || parseFloat(liveBg?.getAttribute('opacity')) || 0.1;
+    if (showTopoBg) { topoBg.setAttribute('opacity', String(liveBgOpacity)); topoBg.style.opacity = ''; }
+    else { topoBg.setAttribute('opacity', '0'); topoBg.style.opacity = ''; }
+  }
+  const topoFills = clone.querySelector('#area-topo-fills');
+  if (topoFills) {
+    const liveFills = document.getElementById('area-topo-fills');
+    const liveFillsOpacity = parseFloat(liveFills?.style.opacity) || parseFloat(liveFills?.getAttribute('opacity')) || 0.2;
+    topoFills.setAttribute('opacity', String(liveFillsOpacity));
+    topoFills.style.opacity = '';
+  }
   const topoOv = clone.querySelector('#topo-overlay');
   if (topoOv) {
     const cur = parseFloat(topoOv.style.opacity) || parseFloat(topoOv.getAttribute('opacity')) || 0;
@@ -3607,10 +3602,23 @@ async function _buildExportSVG(bw) {
   }
 
   // Inline JWRG logo as native SVG markup — reads from embedded data block, works on file://
-  const logoG = _fetchLogoGroup(ns, VB_X + VB_W - 138, VB_Y + VB_H - 75, 126, 0.75);
+  const logoG = _fetchLogoGroup(ns, VB_X + VB_W - 138, VB_Y + VB_H - 75, 126, 0.18);
   if (logoG) clone.appendChild(logoG);
 
   const defs = clone.querySelector('defs');
+
+  // Add color-tint filter matching the browser watermark (#8a8274 / road-label color)
+  if (logoG) {
+    const tintFilt = document.createElementNS(ns, 'filter');
+    tintFilt.setAttribute('id', 'export-logo-tint');
+    tintFilt.setAttribute('color-interpolation-filters', 'sRGB');
+    const cm = document.createElementNS(ns, 'feColorMatrix');
+    cm.setAttribute('type', 'matrix');
+    cm.setAttribute('values', '0 0 0 0 0.5412  0 0 0 0 0.5098  0 0 0 0 0.4549  0 0 0 1 0');
+    tintFilt.appendChild(cm);
+    defs.appendChild(tintFilt);
+    logoG.setAttribute('filter', 'url(#export-logo-tint)');
+  }
 
   // B&W: remap pattern tile colors for legible grayscale contrast
   if (bw) {
@@ -3636,20 +3644,21 @@ async function _buildExportSVG(bw) {
     defs.appendChild(shadowFilt);
   }
 
-  // Embed CSS
-  let css = EXPORT_CSS + (bw ? '\n' + EXPORT_CSS_BW : '');
-  if (bgMode === 'transparent') css += '\n' + EXPORT_CSS_TRANSP_ROADS;
+  // Embed CSS — live map-styles.css + export-specific overrides
+  let css = await _getMapStylesCSS();
+  if (bw) css += '\n' + EXPORT_CSS_BW;
   const styleEl = document.createElementNS(ns, 'style');
   styleEl.textContent = css;
   defs.appendChild(styleEl);
 
-  // Handle the hardcoded background rect in the SVG source
-  const existingBg = clone.querySelector('rect[fill="#eae6dc"]');
+  // Handle the background rect in the SVG source (uses class="st4", not a fill attribute)
+  const existingBg = clone.querySelector('rect.st4');
   if (existingBg) {
     if (bgMode === 'transparent') {
       existingBg.remove();
     } else {
-      existingBg.setAttribute('fill', bgMode === 'white' ? '#ffffff' : '#eae6dc');
+      // Inline style overrides the CSS class rule
+      existingBg.style.fill = bgMode === 'white' ? '#ffffff' : '#eae6dc';
     }
   }
 
@@ -3752,7 +3761,7 @@ async function _openPrintWindow(bw) {
   const svg = await _buildExportSVG(bw || false);
   const win = window.open('', '_blank');
   if (!win) { alert('Allow popups for this page to use the Print function.'); return; }
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tennyson \u2014 Phase One</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#f5f1eb}svg{display:block;width:100%;height:auto}@media print{@page{size:landscape;margin:.4in}body{background:#fff}}</style></head><body>${svg}<script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500)});<\/script></body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tennyson \u2014 Phase One</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#f5f1eb}svg{display:block;width:100%;height:auto}@media print{@page{size:landscape;margin:.4in}html,body{height:100%}body{background:#fff}svg{width:100%;height:100%;max-height:100%}}</style></head><body>${svg}<script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500)});<\/script></body></html>`);
   win.document.close();
 }
 </script>
