@@ -2359,11 +2359,15 @@ const MAP_CSS_DEFAULT = `/* Override map-styles.css rules here.
  * .road-label { letter-spacing: 4px; }
  */`;
 
-function openCSSEditor() {
+async function openCSSEditor() {
   const panel = document.getElementById('css-editor-panel');
   const ta = document.getElementById('css-editor-ta');
-  const override = document.getElementById('map-style-override');
-  ta.value = (override && override.textContent.trim()) ? override.textContent : MAP_CSS_DEFAULT;
+  try {
+    const resp = await fetch('map-styles.css');
+    ta.value = await resp.text();
+  } catch(e) {
+    ta.value = '/* Could not load map-styles.css */';
+  }
   panel.classList.add('open');
   updateCodeHighlight('css-editor-ta', 'css-editor-highlight');
 }
@@ -2372,22 +2376,36 @@ function closeCSSEditor() {
   document.getElementById('css-editor-panel').classList.remove('open');
 }
 
-function applyCSSOverride() {
+async function applyCSSOverride() {
+  const text = document.getElementById('css-editor-ta').value;
+  // Apply immediately as a live override so changes are visible without reload
   let style = document.getElementById('map-style-override');
   if (!style) {
     style = document.createElement('style');
     style.id = 'map-style-override';
     document.head.appendChild(style);
   }
-  style.textContent = document.getElementById('css-editor-ta').value;
+  style.textContent = text;
+  // Save to disk
+  try {
+    const resp = await fetch('/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({filename: 'map-styles.css', content: text})
+    });
+    const data = await resp.json();
+    if (!data.ok) console.error('map-styles.css save failed:', data.error);
+  } catch(e) {
+    console.warn('Dev server not available; map-styles.css not saved to disk:', e);
+  }
 }
 
-function resetCSSOverride() {
-  document.getElementById('css-editor-ta').value = MAP_CSS_DEFAULT;
+async function resetCSSOverride() {
+  try {
+    const resp = await fetch('map-styles.css');
+    document.getElementById('css-editor-ta').value = await resp.text();
+  } catch(e) {}
   updateCodeHighlight('css-editor-ta', 'css-editor-highlight');
-  const style = document.getElementById('map-style-override');
-  if (style) style.textContent = '';
-  localStorage.removeItem('tennyson-css-override');
 }
 
 function copyCSSOverride() {

@@ -70,6 +70,7 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   pointer-events: none;
+dominant-baseline: central;
 }
 
 /* ── Water ─────────────────────────────────────────────────────────── */
@@ -81,11 +82,11 @@
   stroke-linejoin: round;
 }
 .stream-buffer {
-  fill: none;
+  fill: #a7d2e3;
   stroke: #7aabbf;
   stroke-width: 1;
-  stroke-dasharray: 6,3;
-  opacity: 0.6;
+  stroke-dasharray: 0;
+  opacity: 1;
 }
 
 /* ── Easements ─────────────────────────────────────────────────────── */
