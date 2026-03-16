@@ -51,7 +51,7 @@
 .lot-label-group.label-selected .lot-label-num,
 .lot-label-group.label-selected .lot-label-acres {
   fill: #ffffff;
-  filter: drop-shadow(1px 1px 0 #000) drop-shadow(-1px -1px 0 #000) drop-shadow(1px -1px 0 #000) drop-shadow(-1px 1px 0 #000);
+  filter: drop-shadow(0px 0px 24px #000)
 }
 
 /* ── Roads ─────────────────────────────────────────────────────────── */
@@ -104,6 +104,26 @@ dominant-baseline: central;
   stroke-width: 1.5;
   stroke-dasharray: 5,3;
   opacity: 0.5;
+}
+.esmt {
+  stroke: darkorange;
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.esmt-open  { fill: none; }
+.esmt-closed { fill: darkorange; fill-opacity: 0.25; }
+
+/* ── Open space ────────────────────────────────────────────────────── */
+.open-space   { fill: #7a9e62; opacity: 0.5; }
+#topo-fill    { color: #2d5a1e; }
+#open-space-border {
+  fill: none;
+  pointer-events: none;
+  stroke: #8a9e72;
+  stroke-width: 1.5;
 }
 
 /* ── Plat / survey lines ───────────────────────────────────────────── */
