@@ -1615,6 +1615,7 @@ function init() {
       document.getElementById('no-sel').style.display = 'block';
       document.getElementById('lot-info').classList.remove('show');
       if (isMobile()) document.getElementById('info-panel').classList.remove('sheet-open');
+      pushURLState();
     }
   });
   initPanZoom();
@@ -1623,6 +1624,7 @@ function init() {
   // Ensure background topo is visible
   const topoEl = document.getElementById('topo-bg');
   if (topoEl) topoEl.style.display = 'block';
+  restoreFromURL();
 }
 
 function onLotClick(e) {
@@ -1658,6 +1660,7 @@ function selectLot(id) {
     bEl.style.display = 'none';
   }
   openPanel();
+  pushURLState();
 }
 
 function renderBadge(status) {
@@ -1681,6 +1684,7 @@ function toggleBuilderView() {
   document.getElementById('builder-list').classList.toggle('open', builderView);
   applyBuilderColors();
   if (builderView) applyBuilderFilter();
+  pushURLState();
 }
 
 function applyBuilderFilter() {
@@ -1741,6 +1745,7 @@ function setFilter(filter) {
   document.querySelectorAll('#btn-all, #btn-available, #btn-sold, #btn-reserved').forEach(b => b.classList.remove('active'));
   document.getElementById('btn-' + filter).classList.add('active');
   applyFilter(filter);
+  pushURLState();
 }
 
 function applyFilter(filter) {
@@ -1820,6 +1825,51 @@ function resetView() {
     const g = document.getElementById('easement-overlay');
     if (g) g.style.display = 'none';
   }
+  // Deselect lot
+  selectedId = null;
+  document.querySelectorAll('.lot.selected').forEach(el => el.classList.remove('selected'));
+  document.getElementById('no-sel').style.display = 'block';
+  document.getElementById('lot-info').classList.remove('show');
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+// ── URL state (hash-based) ─────────────────────────────────────────
+function pushURLState() {
+  const params = new URLSearchParams();
+  if (selectedId) params.set('lot', selectedId);
+  if (currentFilter !== 'all') params.set('filter', currentFilter);
+  if (platVisible) params.set('plat', '1');
+  if (topoFg) params.set('topo', '1');
+  if (document.getElementById('cb-easements')?.checked) params.set('easements', '1');
+  if (builderView) params.set('builders', '1');
+  const str = params.toString();
+  history.replaceState(null, '', str ? '#' + str : location.pathname + location.search);
+}
+
+function restoreFromURL() {
+  const hash = location.hash.slice(1);
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  const filter = params.get('filter');
+  if (filter && ['available','sold','reserved'].includes(filter)) setFilter(filter);
+  const lot = params.get('lot');
+  if (lot && document.getElementById('lot-' + lot)) selectLot(lot);
+  if (params.get('plat') === '1') {
+    document.getElementById('cb-plat').checked = true;
+    togglePlatOverlay();
+  }
+  if (params.get('topo') === '1') {
+    document.getElementById('cb-topo').checked = true;
+    toggleTopoOverlay();
+  }
+  if (params.get('easements') === '1') {
+    const cb = document.getElementById('cb-easements');
+    if (cb) { cb.checked = true; toggleEasementOverlay(); }
+  }
+  if (params.get('builders') === '1') {
+    document.getElementById('cb-builders').checked = true;
+    toggleBuilderView();
+  }
 }
 
 function isMobile() { return window.innerWidth <= 768; }
@@ -1835,6 +1885,7 @@ function closePanel() {
   selectedId = null;
   document.getElementById('no-sel').style.display = 'block';
   document.getElementById('lot-info').classList.remove('show');
+  pushURLState();
 }
 
 function initPanZoom() {
@@ -3296,12 +3347,14 @@ function toggleTopoOverlay() {
   } else {
     document.getElementById('topo-overlay').style.opacity = '0';
   }
+  pushURLState();
 }
 
 function toggleEasementOverlay() {
   const show = document.getElementById('cb-easements').checked;
   const g = document.getElementById('easement-overlay');
   if (g) g.style.display = show ? '' : 'none';
+  pushURLState();
 }
 
 function copyTopoSettings() {
@@ -3377,6 +3430,7 @@ function togglePlatOverlay() {
     img.style.opacity = '0';
     setTimeout(() => { if (!platVisible) img.style.display = 'none'; }, 400);
   }
+  pushURLState();
 }
 
 function copyOverlaySettings() {
