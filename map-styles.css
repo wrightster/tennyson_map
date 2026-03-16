@@ -6,27 +6,39 @@
 /* ── Lots ──────────────────────────────────────────────────────────── */
 .lot {
   fill: #ccd9b8;
-  stroke: #8a9e72;
-  stroke-width: 1.5;
   cursor: pointer;
-  transition: fill 0.15s, stroke-width 0.15s, opacity 0.25s;
+  transition: fill 0.15s, opacity 0.25s;
+  /* filter applied as SVG presentation attribute by JS to force per-element isolation */
 }
 .lot:hover {
   fill: #b8cda0;
-  stroke-width: 2.5;
+}
+/* .lot.selected — stroke handled by #lot-stroke-layer */
+
+/* Stroke-only overlays rendered above the filtered fill polygons */
+.lot-stroke {
+  fill: none;
+  stroke: #8a9e72;
+  stroke-width: 1.5;
+  pointer-events: none;
+  transition: stroke 0.15s, stroke-width 0.15s;
+}
+.lot-stroke.hovered {
   stroke: #6a8a52;
+  stroke-width: 2.5;
 }
-.lot.selected {
-  stroke: #2c3e28;
-  stroke-width: 3;
-  filter: drop-shadow(0 0 6px rgba(44,62,40,0.4));
+.lot-stroke.selected {
+  stroke: #ffffff;
+  stroke-width: 2.5;
 }
-.lot.available { fill: url(#pat-available); }
-.lot.sold      { fill: url(#pat-sold); }
-.lot.reserved  { fill: url(#pat-reserved); }
-.lot.selected.available { fill: url(#pat-available-sel); }
-.lot.selected.sold      { fill: url(#pat-sold-sel); }
-.lot.selected.reserved  { fill: url(#pat-reserved-sel); }
+/* Patterns temporarily disabled (grainy-inner-glow filter needs clean SourceAlpha)
+.show-status .lot.available { fill: url(#pat-available); }
+.show-status .lot.sold      { fill: url(#pat-sold); }
+.show-status .lot.reserved  { fill: url(#pat-reserved); }
+.show-status .lot.selected.available { fill: url(#pat-available-sel); }
+.show-status .lot.selected.sold      { fill: url(#pat-sold-sel); }
+.show-status .lot.selected.reserved  { fill: url(#pat-reserved-sel); }
+*/
 .lot.dimmed    { opacity: 0.2; }
 
 /* ── Lot labels ────────────────────────────────────────────────────── */
@@ -154,7 +166,14 @@ dominant-baseline: central;
 }
 
 /* ── Builder overlays ──────────────────────────────────────────────── */
+:root {
+  --builder-gap: 2;        /* px gap between lot edge and colored border (read by JS for feMorphology radius) */
+  --builder-band: 3;       /* px width of the colored band itself */
+}
 .builder-dot {
+  fill: none;
+  /* stroke-width = 2 * (gap + band): inner half is visible, outer half is clipped by lot edge */
+  stroke-width: calc((var(--builder-gap) + var(--builder-band)) * 2);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s;

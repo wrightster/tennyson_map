@@ -812,7 +812,7 @@
 
 
   #builder-legend {
-    display: flex;
+    display: none;
     position: absolute;
     top: 12px;
     left: 12px;
@@ -859,10 +859,26 @@
   }
   #builder-list.open {
     max-height: 300px;
-    margin-top: 3px;
+    margin-top: 0;
+    padding-top: 0;
+  }
+  #status-list {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+  }
+  #status-list.open {
+    display: flex;
     padding-top: 6px;
+    margin-top: 3px;
+  }
+  #builder-list.open + #status-list.open {
     border-top: 1px solid #e0ddd6;
   }
+  .status-swatch { display:inline-block; width:12px; height:12px; border-radius:2px; border:1px solid #aaa; vertical-align:middle; flex-shrink:0; }
+  .available-swatch { background: #cce8c2; border-color: #8a9e72; }
+  .sold-swatch      { background: #e8c2c2; border-color: #c08080; }
+  .reserved-swatch  { background: #f5e8b0; border-color: #d4b84a; }
   #builder-legend .legend-item {
     display: flex;
     gap: 8px;
@@ -1216,19 +1232,16 @@
 <div class="main">
   <div class="map-wrap" id="map-wrap">
     <div class="map-toolbar">
-      <span class="toolbar-title">Lot Status</span>
-      <button class="btn active" id="btn-all" onclick="setFilter('all')">All</button>
-      <button class="btn" id="btn-available" onclick="setFilter('available')">Available</button>
-      <button class="btn" id="btn-sold" onclick="setFilter('sold')">Sold</button>
-      <button class="btn" id="btn-reserved" onclick="setFilter('reserved')">Reserved</button>
+      <span class="toolbar-title">Overlays</span>
+      <button class="btn active" id="btn-ov-status"   onclick="toggleLotStatusOverlay()">Lot Status</button>
+      <button class="btn"        id="btn-ov-builders"  onclick="toggleBuilderOverlay()">Builders</button>
+      <button class="btn"        id="btn-ov-plat"      onclick="togglePlatOverlay()">Plat</button>
+      <button class="btn"        id="btn-ov-topo"      onclick="toggleTopoOverlay()">Topo</button>
+      <button class="btn"        id="btn-ov-easements" onclick="toggleEasementOverlay()">Easements</button>
     </div>
     <div id="builder-legend">
-      <div class="legend-title">Overlays</div>
-      <label class="legend-overlay-item"><input type="checkbox" id="cb-plat" onchange="togglePlatOverlay()"> Plat</label>
-      <label class="legend-overlay-item"><input type="checkbox" id="cb-topo" onchange="toggleTopoOverlay()"> Topo</label>
-      <label class="legend-overlay-item"><input type="checkbox" id="cb-easements" onchange="toggleEasementOverlay()"> Easements</label>
-      <label class="legend-overlay-item"><input type="checkbox" id="cb-builders" onchange="toggleBuilderView()"> Builders</label>
       <div id="builder-list"></div>
+      <div id="status-list"></div>
     </div>
     <div class="zoom-controls">
       <div class="zoom-row"><button class="zoom-btn" title="Zoom in" onclick="adjustZoom(1.25)">+</button><span class="zoom-lbl">Zoom In</span></div>
@@ -1438,6 +1451,8 @@
 <script>
 let LOT_DATA = [], BUILDER_DATA = [], builderByLot = {}, statuses = {};
 let builderView = false;
+let lotStatusOverlay = true;
+let easementsVisible = false;
 let selectedId = null, currentFilter = 'all';
 let scale = 1.2009865115336706, panX = -99.12704415773533, panY = -109.15939821558845, isPanning = false, startPX, startPY;
 let _zoomAnimating = false, _zoomAnimStart = null;
@@ -1575,12 +1590,28 @@ function populateLabels(rows) {
 // ── Rebuild builder legend HTML from BUILDER_DATA ─────────────────
 function rebuildBuilderLegend() {
   const list = document.getElementById('builder-list');
-  list.innerHTML = '';
+  list.innerHTML = '<div class="legend-title">Builders</div>';
   BUILDER_DATA.forEach((b, idx) => {
     const label = document.createElement('label');
     label.className = 'legend-item';
     label.innerHTML = `<input type="checkbox" class="builder-cb" data-idx="${idx}" checked onchange="applyBuilderFilter()"><div class="swatch" style="background:${b.color};border-color:${b.border}"></div>${b.short}`;
     list.appendChild(label);
+  });
+}
+
+// ── Rebuild status legend HTML ─────────────────────────────────────
+function rebuildStatusLegend() {
+  const el = document.getElementById('status-list');
+  el.innerHTML = '<div class="legend-title">Lot Status</div>';
+  [
+    { status: 'available', label: 'Available' },
+    { status: 'sold',      label: 'Sold' },
+    { status: 'reserved',  label: 'Reserved' },
+  ].forEach(({ status, label }) => {
+    const lbl = document.createElement('label');
+    lbl.className = 'legend-item';
+    lbl.innerHTML = `<input type="checkbox" class="status-cb" data-status="${status}" checked onchange="applyStatusFilter()"><span class="status-swatch ${status}-swatch"></span>${label}`;
+    el.appendChild(lbl);
   });
 }
 
@@ -1594,25 +1625,63 @@ async function loadResources() {
   ]);
   document.getElementById('map-styles').textContent = cssText;
   container.innerHTML = svgText;
+  container.classList.add('show-status');
   _lastRows = parseCSV(csvText);
   rebuildFromCSV(_lastRows);
   _restoreSavedState();     // load saved labelOffsets before populateLabels uses them
   populateLabels(_lastRows);
   rebuildBuilderLegend();
+  rebuildStatusLegend();
   LOT_DATA.forEach(lot => {
     const el = document.getElementById('lot-' + lot.id);
     if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(statuses[lot.id] || 'available'); }
   });
   init();
+  injectStrokeLayer();
   initEditHandlers();
   captureOrigLabelTransforms();
 }
 
+function injectStrokeLayer() {
+  const svg = document.getElementById('map-svg');
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.id = 'lot-stroke-layer';
+  document.querySelectorAll('.lot').forEach(lot => {
+    // Set filter as SVG presentation attribute (not CSS) to force per-element isolation.
+    // CSS filter on identical elements in the same parent can be batch-composited by
+    // the browser, making all lots act as one shape and breaking the inner glow.
+    lot.setAttribute('filter', 'url(#grainy-inner-glow)');
+
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', lot.getAttribute('points'));
+    poly.dataset.lot = lot.dataset.lot;
+    poly.classList.add('lot-stroke');
+    g.appendChild(poly);
+  });
+  svg.appendChild(g);
+}
+
+function deselectAllStrokeOverlays() {
+  document.querySelectorAll('#lot-stroke-layer .lot-stroke.selected')
+    .forEach(el => el.classList.remove('selected'));
+}
+
 function init() {
-  document.querySelectorAll('.lot').forEach(el => el.addEventListener('click', onLotClick));
+  document.querySelectorAll('.lot').forEach(el => {
+    el.addEventListener('click', onLotClick);
+    el.addEventListener('mouseover', () => {
+      const s = document.querySelector(`#lot-stroke-layer [data-lot="${el.dataset.lot}"]`);
+      if (s) s.classList.add('hovered');
+    });
+    el.addEventListener('mouseout', () => {
+      const s = document.querySelector(`#lot-stroke-layer [data-lot="${el.dataset.lot}"]`);
+      if (s) s.classList.remove('hovered');
+    });
+  });
   document.getElementById('map-svg').addEventListener('click', e => {
     if (!e.target.classList.contains('lot')) {
       document.querySelectorAll('.lot.selected').forEach(el => el.classList.remove('selected'));
+      deselectAllStrokeOverlays();
       document.querySelectorAll('.lot-label-group.label-selected').forEach(el => el.classList.remove('label-selected'));
       selectedId = null;
       document.getElementById('no-sel').style.display = 'block';
@@ -1627,6 +1696,9 @@ function init() {
   // Ensure background topo is visible
   const topoEl = document.getElementById('topo-bg');
   if (topoEl) topoEl.style.display = 'block';
+  // Initialize status overlay (on by default)
+  document.getElementById('status-list').classList.add('open');
+  syncLegendPanelVisibility();
   restoreFromURL();
 }
 
@@ -1642,6 +1714,7 @@ function onLotClick(e) {
 
 function selectLot(id) {
   document.querySelectorAll('.lot.selected').forEach(el => el.classList.remove('selected'));
+  deselectAllStrokeOverlays();
   document.querySelectorAll('.lot-label-group.label-selected').forEach(el => el.classList.remove('label-selected'));
   selectedId = id;
   const el = document.getElementById('lot-' + id);
@@ -1649,6 +1722,8 @@ function selectLot(id) {
     el.classList.add('selected');
     el.parentNode.appendChild(el);
   }
+  const strokeEl = document.querySelector(`#lot-stroke-layer [data-lot="${id}"]`);
+  if (strokeEl) strokeEl.classList.add('selected');
   const labelG = document.querySelector(`.lot-label-group[data-lot-id="${id}"]`);
   if (labelG) labelG.classList.add('label-selected');
   const lot = LOT_DATA.find(l => l.id === id);
@@ -1682,15 +1757,32 @@ function setStatus(status) {
   if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(status); }
   renderBadge(status);
   updateStats();
-  applyFilter(currentFilter);
+  applyStatusFilter();
 }
 
-function toggleBuilderView() {
-  builderView = document.getElementById('cb-builders').checked;
+function toggleLotStatusOverlay() {
+  lotStatusOverlay = !lotStatusOverlay;
+  document.getElementById('btn-ov-status').classList.toggle('active', lotStatusOverlay);
+  document.getElementById('map-svg-container').classList.toggle('show-status', lotStatusOverlay);
+  document.getElementById('status-list').classList.toggle('open', lotStatusOverlay);
+  syncLegendPanelVisibility();
+  if (!lotStatusOverlay) setFilter('all');
+  pushURLState();
+}
+
+function toggleBuilderOverlay() {
+  builderView = !builderView;
+  document.getElementById('btn-ov-builders').classList.toggle('active', builderView);
   document.getElementById('builder-list').classList.toggle('open', builderView);
   applyBuilderColors();
   if (builderView) applyBuilderFilter();
+  syncLegendPanelVisibility();
   pushURLState();
+}
+
+function syncLegendPanelVisibility() {
+  const panel = document.getElementById('builder-legend');
+  panel.style.display = (builderView || lotStatusOverlay) ? 'flex' : 'none';
 }
 
 function applyBuilderFilter() {
@@ -1709,29 +1801,47 @@ function applyBuilderFilter() {
 
 function createBuilderDots() {
   const g = document.getElementById('builder-dots');
-  if (g.children.length) return;
+  // Always rebuild so JS controls styling (SVG may have stale baked-in elements)
+  while (g.firstChild) g.removeChild(g.firstChild);
   const ns = 'http://www.w3.org/2000/svg';
   const defs = document.querySelector('#map-svg defs');
+  // Shared erode filter: shrinks the mask polygon inward by --builder-gap px (from map-styles.css)
+  if (!document.getElementById('builder-erode')) {
+    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--builder-gap')) || 3;
+    const filter = document.createElementNS(ns, 'filter');
+    filter.setAttribute('id', 'builder-erode');
+    filter.setAttribute('x', '-10%'); filter.setAttribute('y', '-10%');
+    filter.setAttribute('width', '120%'); filter.setAttribute('height', '120%');
+    filter.setAttribute('color-interpolation-filters', 'sRGB');
+    const morph = document.createElementNS(ns, 'feMorphology');
+    morph.setAttribute('operator', 'erode');
+    morph.setAttribute('in', 'SourceGraphic');
+    morph.setAttribute('radius', gap);
+    filter.appendChild(morph);
+    defs.appendChild(filter);
+  }
   document.querySelectorAll('[id^="lot-"]').forEach(lotEl => {
     const lotId = lotEl.id.replace('lot-', '');
     const b = builderByLot[lotId];
     if (!b) return;
     const points = lotEl.getAttribute('points');
-    // ClipPath confines the stroke to the lot interior (inner-aligned stroke)
-    const clipId = 'builder-clip-' + lotId;
-    const clipPath = document.createElementNS(ns, 'clipPath');
-    clipPath.setAttribute('id', clipId);
-    const clipPoly = document.createElementNS(ns, 'polygon');
-    clipPoly.setAttribute('points', points);
-    clipPath.appendChild(clipPoly);
-    defs.appendChild(clipPath);
-    // stroke-width 10 = 5 inner + 5 outer; clip removes outer half
+    // Mask with erode filter: lot polygon shrunk 3px inward → 3px gap from lot edge
+    const existing = document.getElementById('builder-mask-' + lotId);
+    if (existing) existing.remove();
+    const maskId = 'builder-mask-' + lotId;
+    const mask = document.createElementNS(ns, 'mask');
+    mask.setAttribute('id', maskId);
+    const maskPoly = document.createElementNS(ns, 'polygon');
+    maskPoly.setAttribute('points', points);
+    maskPoly.setAttribute('fill', 'white');
+    maskPoly.setAttribute('filter', 'url(#builder-erode)');
+    mask.appendChild(maskPoly);
+    defs.appendChild(mask);
+    // fill/stroke-width styled via .builder-dot in map-styles.css; stroke color is data-driven
     const poly = document.createElementNS(ns, 'polygon');
     poly.setAttribute('points', points);
-    poly.setAttribute('fill', 'none');
     poly.setAttribute('stroke', b.color);
-    poly.setAttribute('stroke-width', 10);
-    poly.setAttribute('clip-path', 'url(#' + clipId + ')');
+    poly.setAttribute('mask', 'url(#' + maskId + ')');
     poly.classList.add('builder-dot');
     poly.dataset.lot = lotId;
     g.appendChild(poly);
@@ -1748,16 +1858,19 @@ function applyBuilderColors() {
 
 function setFilter(filter) {
   currentFilter = filter;
-  document.querySelectorAll('#btn-all, #btn-available, #btn-sold, #btn-reserved').forEach(b => b.classList.remove('active'));
-  document.getElementById('btn-' + filter).classList.add('active');
-  applyFilter(filter);
+  document.querySelectorAll('.status-cb').forEach(cb => {
+    cb.checked = (filter === 'all' || cb.dataset.status === filter);
+  });
+  applyStatusFilter();
   pushURLState();
 }
 
-function applyFilter(filter) {
+function applyStatusFilter() {
+  const cbs = document.querySelectorAll('.status-cb');
+  if (!cbs.length) return;
+  const shown = new Set([...cbs].filter(cb => cb.checked).map(cb => cb.dataset.status));
   document.querySelectorAll('.lot').forEach(el => {
-    const id = el.dataset.lot;
-    el.classList.toggle('dimmed', filter !== 'all' && statuses[id] !== filter);
+    el.classList.toggle('dimmed', !shown.has(statuses[el.dataset.lot]));
   });
 }
 
@@ -1800,40 +1913,20 @@ function resetView() {
   zoomTo(1.2009865115336706, -99.12704415773533, -109.15939821558845);
   // Reset status filter to "All"
   setFilter('all');
+  // Turn on status overlay if off
+  if (!lotStatusOverlay) toggleLotStatusOverlay();
   // Turn off builders
-  if (builderView) {
-    builderView = false;
-    document.getElementById('cb-builders').checked = false;
-    document.getElementById('builder-list').classList.remove('open');
-    document.querySelectorAll('.builder-dot').forEach(dot => {
-      dot.classList.remove('show', 'dimmed');
-    });
-  }
+  if (builderView) toggleBuilderOverlay();
   // Turn off plat overlay
-  if (platVisible) {
-    platVisible = false;
-    document.getElementById('cb-plat').checked = false;
-    document.getElementById('plat-overlay').style.display = 'none';
-    document.getElementById('plat-controls').style.display = 'none';
-    document.querySelector('.labels').style.display = '';
-  }
+  if (platVisible) togglePlatOverlay();
   // Hide topo overlay
-  if (topoFg) {
-    topoFg = false;
-    document.getElementById('cb-topo').checked = false;
-    document.getElementById('topo-overlay').style.opacity = '0';
-    document.getElementById('topo-controls').style.display = 'none';
-  }
+  if (topoFg) toggleTopoOverlay();
   // Hide easement overlay
-  const easeCb = document.getElementById('cb-easements');
-  if (easeCb && easeCb.checked) {
-    easeCb.checked = false;
-    const g = document.getElementById('easement-overlay');
-    if (g) g.style.display = 'none';
-  }
+  if (easementsVisible) toggleEasementOverlay();
   // Deselect lot
   selectedId = null;
   document.querySelectorAll('.lot.selected').forEach(el => el.classList.remove('selected'));
+  deselectAllStrokeOverlays();
   document.getElementById('no-sel').style.display = 'block';
   document.getElementById('lot-info').classList.remove('show');
   history.replaceState(null, '', location.pathname + location.search);
@@ -1844,9 +1937,10 @@ function pushURLState() {
   const params = new URLSearchParams();
   if (selectedId) params.set('lot', selectedId);
   if (currentFilter !== 'all') params.set('filter', currentFilter);
+  if (!lotStatusOverlay) params.set('status', '0');
   if (platVisible) params.set('plat', '1');
   if (topoFg) params.set('topo', '1');
-  if (document.getElementById('cb-easements')?.checked) params.set('easements', '1');
+  if (easementsVisible) params.set('easements', '1');
   if (builderView) params.set('builders', '1');
   const str = params.toString();
   history.replaceState(null, '', str ? '#' + str : location.pathname + location.search);
@@ -1860,22 +1954,11 @@ function restoreFromURL() {
   if (filter && ['available','sold','reserved'].includes(filter)) setFilter(filter);
   const lot = params.get('lot');
   if (lot && document.getElementById('lot-' + lot)) selectLot(lot);
-  if (params.get('plat') === '1') {
-    document.getElementById('cb-plat').checked = true;
-    togglePlatOverlay();
-  }
-  if (params.get('topo') === '1') {
-    document.getElementById('cb-topo').checked = true;
-    toggleTopoOverlay();
-  }
-  if (params.get('easements') === '1') {
-    const cb = document.getElementById('cb-easements');
-    if (cb) { cb.checked = true; toggleEasementOverlay(); }
-  }
-  if (params.get('builders') === '1') {
-    document.getElementById('cb-builders').checked = true;
-    toggleBuilderView();
-  }
+  if (params.get('status') === '0') toggleLotStatusOverlay();
+  if (params.get('plat') === '1') togglePlatOverlay();
+  if (params.get('topo') === '1') toggleTopoOverlay();
+  if (params.get('easements') === '1') toggleEasementOverlay();
+  if (params.get('builders') === '1') toggleBuilderOverlay();
 }
 
 function isMobile() { return window.innerWidth <= 768; }
@@ -1888,6 +1971,7 @@ function closePanel() {
   const panel = document.getElementById('info-panel');
   panel.classList.remove('sheet-open');
   document.querySelectorAll('.lot.selected').forEach(el => el.classList.remove('selected'));
+  deselectAllStrokeOverlays();
   document.querySelectorAll('.lot-label-group.label-selected').forEach(el => el.classList.remove('label-selected'));
   selectedId = null;
   document.getElementById('no-sel').style.display = 'block';
@@ -2114,7 +2198,7 @@ function cycleStatus(id) {
   const el = document.getElementById('lot-' + id);
   if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(next); }
   updateStats();
-  applyFilter(currentFilter);
+  applyStatusFilter();
 }
 
 // ── Vertex anchor editing ──────────────────────────────────────────
@@ -3346,7 +3430,8 @@ const TOPO_CX = 555, TOPO_CY = 513;
 let topoFg = false;
 
 function toggleTopoOverlay() {
-  topoFg = document.getElementById('cb-topo').checked;
+  topoFg = !topoFg;
+  document.getElementById('btn-ov-topo').classList.toggle('active', topoFg);
   const panel = document.getElementById('topo-controls');
   panel.style.display = topoFg ? 'block' : 'none';
   if (topoFg) {
@@ -3358,9 +3443,10 @@ function toggleTopoOverlay() {
 }
 
 function toggleEasementOverlay() {
-  const show = document.getElementById('cb-easements').checked;
+  easementsVisible = !easementsVisible;
+  document.getElementById('btn-ov-easements').classList.toggle('active', easementsVisible);
   const g = document.getElementById('easement-overlay');
-  if (g) g.style.display = show ? '' : 'none';
+  if (g) g.style.display = easementsVisible ? '' : 'none';
   pushURLState();
 }
 
@@ -3424,7 +3510,8 @@ const OV_CX = 555, OV_CY = 513;
 let platVisible = false;
 
 function togglePlatOverlay() {
-  platVisible = document.getElementById('cb-plat').checked;
+  platVisible = !platVisible;
+  document.getElementById('btn-ov-plat').classList.toggle('active', platVisible);
   const img = document.getElementById('plat-overlay');
   const panel = document.getElementById('plat-controls');
   panel.style.display = platVisible ? 'block' : 'none';
@@ -3555,30 +3642,74 @@ document.addEventListener('keydown', e => {
 });
 
 function _buildExportLegend(ns, bw) {
-  if (!builderView || !BUILDER_DATA.length) return null;
+  const showBuilders = builderView && BUILDER_DATA.length;
+  const showStatus = lotStatusOverlay;
+  if (!showBuilders && !showStatus) return null;
+
   const g = document.createElementNS(ns, 'g');
   const pad = 10, itemH = 18, titleH = 18;
-  const boxH = pad + titleH + BUILDER_DATA.length * itemH + pad;
-  const maxLen = BUILDER_DATA.reduce((m, b) => Math.max(m, b.short.length), 0);
-  const boxW = Math.max(130, maxLen * 7 + 38);
-  const x = 10, y = 944 - boxH; // bottom-left, within 958-height cropped viewBox
-  const bg = document.createElementNS(ns, 'rect');
-  [['x',x],['y',y],['width',boxW],['height',boxH],['fill', bw ? '#fff' : 'rgba(255,255,255,0.92)'],['rx',6],['stroke','#ccc'],['stroke-width',0.5]].forEach(([k,v]) => bg.setAttribute(k,v));
-  g.appendChild(bg);
-  const title = document.createElementNS(ns, 'text');
-  [['x',x+pad],['y',y+pad+11],['font-family','Jost,sans-serif'],['font-size',9],['font-weight',600],['letter-spacing',1],['fill', bw ? '#000' : '#3a4a2e']].forEach(([k,v]) => title.setAttribute(k,v));
-  title.textContent = 'BUILDERS';
-  g.appendChild(title);
-  BUILDER_DATA.forEach((b, i) => {
-    const iy = y + pad + titleH + i * itemH;
-    const sw = document.createElementNS(ns, 'rect');
-    [['x',x+pad],['y',iy+1],['width',12],['height',12],['fill', bw ? 'none' : b.color],['stroke', bw ? '#888' : b.border],['stroke-width',1.5],['rx',2]].forEach(([k,v]) => sw.setAttribute(k,v));
-    g.appendChild(sw);
-    const lbl = document.createElementNS(ns, 'text');
-    [['x',x+pad+16],['y',iy+11],['font-family','Jost,sans-serif'],['font-size',11],['fill', bw ? '#333' : '#444']].forEach(([k,v]) => lbl.setAttribute(k,v));
-    lbl.textContent = b.short;
-    g.appendChild(lbl);
-  });
+  const x = 10;
+
+  // Status legend dimensions
+  const statItems = [
+    { label: 'Available', color: bw ? '#f2f2f2' : '#cce8c2', border: bw ? '#888' : '#8a9e72' },
+    { label: 'Sold',      color: bw ? '#aaaaaa' : '#e8c2c2', border: bw ? '#888' : '#c08080' },
+    { label: 'Reserved',  color: bw ? '#d8d8d8' : '#f5e8b0', border: bw ? '#888' : '#d4b84a' },
+  ];
+  const statusBoxH = showStatus ? (pad + titleH + statItems.length * itemH + pad) : 0;
+  const statusBoxW = 120;
+
+  // Builder legend dimensions
+  const maxLen = showBuilders ? BUILDER_DATA.reduce((m, b) => Math.max(m, b.short.length), 0) : 0;
+  const builderBoxW = showBuilders ? Math.max(130, maxLen * 7 + 38) : 0;
+  const builderBoxH = showBuilders ? (pad + titleH + BUILDER_DATA.length * itemH + pad) : 0;
+
+  const gap = (showBuilders && showStatus) ? 6 : 0;
+
+  // Draw builder legend at the very bottom
+  if (showBuilders) {
+    const y = 944 - builderBoxH;
+    const bg = document.createElementNS(ns, 'rect');
+    [['x',x],['y',y],['width',builderBoxW],['height',builderBoxH],['fill', bw ? '#fff' : 'rgba(255,255,255,0.92)'],['rx',6],['stroke','#ccc'],['stroke-width',0.5]].forEach(([k,v]) => bg.setAttribute(k,v));
+    g.appendChild(bg);
+    const title = document.createElementNS(ns, 'text');
+    [['x',x+pad],['y',y+pad+11],['font-family','Jost,sans-serif'],['font-size',9],['font-weight',600],['letter-spacing',1],['fill', bw ? '#000' : '#3a4a2e']].forEach(([k,v]) => title.setAttribute(k,v));
+    title.textContent = 'BUILDERS';
+    g.appendChild(title);
+    BUILDER_DATA.forEach((b, i) => {
+      const iy = y + pad + titleH + i * itemH;
+      const sw = document.createElementNS(ns, 'rect');
+      [['x',x+pad],['y',iy+1],['width',12],['height',12],['fill', bw ? 'none' : b.color],['stroke', bw ? '#888' : b.border],['stroke-width',1.5],['rx',2]].forEach(([k,v]) => sw.setAttribute(k,v));
+      g.appendChild(sw);
+      const lbl = document.createElementNS(ns, 'text');
+      [['x',x+pad+16],['y',iy+11],['font-family','Jost,sans-serif'],['font-size',11],['fill', bw ? '#333' : '#444']].forEach(([k,v]) => lbl.setAttribute(k,v));
+      lbl.textContent = b.short;
+      g.appendChild(lbl);
+    });
+  }
+
+  // Draw status legend above builder legend
+  if (showStatus) {
+    const y = 944 - builderBoxH - gap - statusBoxH;
+    const bg = document.createElementNS(ns, 'rect');
+    [['x',x],['y',y],['width',statusBoxW],['height',statusBoxH],['fill', bw ? '#fff' : 'rgba(255,255,255,0.92)'],['rx',6],['stroke','#ccc'],['stroke-width',0.5]].forEach(([k,v]) => bg.setAttribute(k,v));
+    g.appendChild(bg);
+    const title = document.createElementNS(ns, 'text');
+    [['x',x+pad],['y',y+pad+11],['font-family','Jost,sans-serif'],['font-size',9],['font-weight',600],['letter-spacing',1],['fill', bw ? '#000' : '#3a4a2e']].forEach(([k,v]) => title.setAttribute(k,v));
+    title.textContent = 'LOT STATUS';
+    g.appendChild(title);
+    statItems.forEach((item, i) => {
+      const iy = y + pad + titleH + i * itemH;
+      const sw = document.createElementNS(ns, 'rect');
+      [['x',x+pad],['y',iy+1],['width',12],['height',12],['fill',item.color],['stroke',item.border],['stroke-width',1],['rx',2]].forEach(([k,v]) => sw.setAttribute(k,v));
+      g.appendChild(sw);
+      const lbl = document.createElementNS(ns, 'text');
+      [['x',x+pad+16],['y',iy+11],['font-family','Jost,sans-serif'],['font-size',11],['fill', bw ? '#333' : '#444']].forEach(([k,v]) => lbl.setAttribute(k,v));
+      lbl.textContent = item.label;
+      g.appendChild(lbl);
+    });
+  }
+
   return g;
 }
 
