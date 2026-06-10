@@ -14,7 +14,7 @@
       }
 
       .st4 {
-        fill: #eae6dc;
+        fill: #fbfaf6;
       }
 
       .st5 {
@@ -99,6 +99,12 @@
         <rect class="st11" x="1117.8" y="-116.7" width="120" height="1046.2"/>
       </g>
     </mask>
+    <!-- Sage wash under the subdivision, fading to paper white (poster style) -->
+    <radialGradient id="bg-wash-gradient" cx="600" cy="470" r="660" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#879a77"/>
+      <stop offset=".55" stop-color="#879a77"/>
+      <stop offset="1" stop-color="#879a77" stop-opacity="0"/>
+    </radialGradient>
     <path id="lawrence-road-path" d="M 724,940 L 828,807 L 886,723 L 944,613 L 1040,380 L 1106,215"/>
     <path id="tennyson-court-path" d="M 300,436 L 420,435 L 550,438 L 650,449 L 720,468"/>
 
@@ -109,7 +115,7 @@
     <!-- Grainy inner glow: soft-light grain overlaid on smooth blurry gradient -->
     <filter id="grainy-inner-glow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
       <!-- 1. Smooth inner glow: warm color bleeds inward from lot edges -->
-      <feFlood flood-color="#6a8a52" flood-opacity=".5" result="glowColor"/>
+      <feFlood flood-color="#3a3429" flood-opacity=".4" result="glowColor"/>
       <feComposite in="glowColor" in2="SourceAlpha" operator="out" result="outerFill"/>
       <feGaussianBlur in="outerFill" stdDeviation="10" result="blurredOuter"/>
       <feComposite in="blurredOuter" in2="SourceAlpha" operator="in" result="innerGlow"/>
@@ -305,6 +311,8 @@
     </clipPath>
   <clipPath id="builder-clip-2"><polygon points="713 700 713 700 703.9 678 703.9 678 793.1 546.8 857.9 590.7 857.9 590.7 857.9 590.7 754.1 743.5 713 700"/></clipPath><clipPath id="builder-clip-3"><polygon points="703.9 678 693.8 653.6 693.8 653.6 634.6 647.1 620.4 648.9 722.4 498.8 722.4 498.8 793.1 546.7 793.1 546.7 793.1 546.8 703.9 678"/></clipPath><clipPath id="builder-clip-4"><polygon points="722.4 498.8 722.4 498.8 620.4 648.9 620.4 648.9 582.5 653.6 632.4 457.1 632.4 457.1 648.7 461.6 668.4 468.9 684.4 476 698.1 483.2 715.8 494 715.8 494 722.4 498.8"/></clipPath><clipPath id="builder-clip-6"><polygon points="544.5 654.6 477.7 624.6 478.4 448.5 545.3 448.7 545.3 448.8 545.3 448.8 544.5 654.6"/></clipPath><clipPath id="builder-clip-7"><polygon points="477.7 624.6 477.7 624.6 445.4 590.1 445.4 590.1 390.2 585.4 390.7 448.2 478.4 448.5 478.4 448.5 477.7 624.6"/></clipPath><clipPath id="builder-clip-9"><polygon points="274.8 461.1 295.6 551.6 248.2 539.6 248.2 539.6 166.4 505.6 144.5 479.8 126.5 426.9 126.8 419 126.9 419 240.2 430.6 240.4 439 243.1 446.5 247 452.2 251.3 456.2 255.8 459 261.1 460.8 267 461.7 274.8 461.1"/></clipPath><clipPath id="builder-clip-8"><polygon points="286.7 454.9 289 452.5 292.5 449.8 295.4 448.5 299.8 447.7 390.7 448.2 390.7 448.2 390.7 448.2 390.2 585.4 353.2 582.2 353.2 582.2 320.4 557.9 320.4 557.9 295.6 551.6 295.6 551.6 274.8 461.1 282.7 458 286.7 454.9"/></clipPath><clipPath id="builder-clip-10"><polygon points="228.2 328.5 279.1 332.7 300 325.7 298.9 419.5 298.5 419.5 295.1 418.7 292.1 417.2 289.3 414.6 285.1 410.9 280.4 408.1 275.4 406.3 271.4 405.5 267.3 405.3 263.3 405.7 259.3 406.7 255.5 408.2 252 410.2 248.8 412.8 246 415.8 243.7 419.1 241.9 422.8 241 425.1 240.2 430.6 240.2 430.6 240.2 430.6 126.9 419 126.9 419 128.5 386.4 149.4 361.9 202.6 351.2 228.2 328.5"/></clipPath><clipPath id="builder-clip-11"><polygon points="389.1 296.1 414.9 302.6 414.9 302.6 414.2 420 414.2 420 414.2 420 298.9 419.5 300 325.7 300 325.7 389.1 296.1"/></clipPath><clipPath id="builder-clip-12"><polygon points="489.6 267.2 489.6 267.2 506.9 263.9 506.3 420.4 414.2 420 414.2 420 414.9 302.6 414.9 302.6 489.6 267.2"/></clipPath><clipPath id="builder-clip-13"><polygon points="591.8 278.2 591.8 278.2 583.7 421.2 567.7 420.6 567.7 420.6 506.3 420.4 506.3 420.4 506.3 420.4 506.9 263.9 506.9 263.9 549 256.1 591.8 278.2"/></clipPath><clipPath id="builder-clip-14"><polygon points="591.8 278.2 591.8 278.2 629.6 226.9 687.5 250.4 640.9 430.1 640.9 430.1 627.9 427 612.3 424.2 598.3 422.4 583.7 421.2 591.8 278.2"/></clipPath><clipPath id="builder-clip-15"><polygon points="687.5 250.4 687.5 250.4 772.2 302.1 698.4 451.6 696.4 450.6 694.7 449.8 693.4 449.1 692.6 448.7 686.1 445.7 675.5 441.4 663.4 436.9 651 432.9 640.9 430.1 687.5 250.4"/></clipPath><clipPath id="builder-clip-16"><polygon points="772.2 302.1 772.2 302.1 772.2 302.1 819.9 336.1 845.6 368.8 762.2 491.6 762.2 491.6 733.5 471.9 733.5 471.9 717.1 461.6 704.1 454.5 703.5 454.1 698.4 451.6 772.2 302.1"/></clipPath><clipPath id="builder-clip-17"><polygon points="845.6 368.8 874.8 405.8 894.2 462.3 894.2 462.3 854 554 762.2 491.6 762.2 491.6 845.6 368.8"/></clipPath></defs>
   <rect class="st4" x="0" y="0" width="1240" height="1000" rx="4" ry="4"/>
+  <circle id="bg-wash" cx="600" cy="470" r="660" fill="url(#bg-wash-gradient)"
+          transform="translate(0,84.6) scale(1,0.82)" pointer-events="none"/>
   <!-- Open space and recreation area topo texture fills -->
   <g id="area-topo-fills" style="opacity: 0.2;" class="">
     <polygon id="open-space" class="open-space" fill-rule="evenodd" points="144.5 479.8 166.4 505.6 248.2 539.6 295.6 551.6 320.4 557.9 353.2 582.2 390.2 585.4 445.4 590.1 477.7 624.6 544.5 654.6 582.5 653.6 620.4 648.9 634.6 647.1 693.8 653.6 703.9 678 713 700 754.1 743.5 783.1 774.2 112.2 579.2 122.1 408.9 128.9 263.4 130.5 161.6 551.3 161.6 870.6 167.4 815.3 238.6 874.2 300.3 959.5 311 1033.4 326.9 1041.8 328.4 1023.9 373.2 940.9 355.8 894.2 462.3 874.8 405.8 845.6 368.8 819.9 336.1 772.2 302.1 687.5 250.4 629.6 226.9 591.8 278.2 549 256.1 506.9 263.9 489.6 267.2 414.9 302.6 389.1 296.1 300 325.7 279.1 332.7 228.2 328.5 202.6 351.2 149.4 361.9 128.5 386.4 127.2 413.3 126.9 419 126.6 424.6 126.5 426.9 144.5 479.8"/>

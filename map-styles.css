@@ -4,27 +4,29 @@
  * ------------------------------------------------------------------ */
 
 /* ── Lots ──────────────────────────────────────────────────────────── */
+/* Each lot is filled with its builder's color (poster palette);
+ * --lot-fill is set per element by rebuildFromCSV(). Unassigned → sage. */
 .lot {
-  fill: #ccd9b8;
+  fill: var(--lot-fill, #9fa995);
   cursor: pointer;
   transition: fill 0.15s, opacity 0.25s;
   /* filter applied as SVG presentation attribute by JS to force per-element isolation */
 }
 .lot:hover {
-  fill: #b8cda0;
+  fill: color-mix(in srgb, var(--lot-fill, #9fa995) 82%, #ffffff);
 }
 /* .lot.selected — stroke handled by #lot-stroke-layer */
 
 /* Stroke-only overlays rendered above the filtered fill polygons */
 .lot-stroke {
   fill: none;
-  stroke: #8a9e72;
-  stroke-width: 1.5;
+  stroke: #231f20;
+  stroke-width: 1.2;
   pointer-events: none;
   transition: stroke 0.15s, stroke-width 0.15s;
 }
 .lot-stroke.hovered {
-  stroke: #6a8a52;
+  stroke: #231f20;
   stroke-width: 2.5;
 }
 .lot-stroke.selected {
@@ -43,22 +45,41 @@
 
 /* ── Lot labels ────────────────────────────────────────────────────── */
 .lot-label-group { pointer-events: none; }
+.lot-label-badge {
+  fill: none;
+  stroke: #231f20;
+  stroke-width: 1.2;
+}
 .lot-label-num {
-  font-family: 'Jost', sans-serif;
-  font-size: 16px;
+  font-family: 'minion-pro', Georgia, serif;
+  font-size: 15px;
   font-weight: 600;
-  fill: #3a4a2e;
+  fill: #231f20;
   text-anchor: middle;
   dominant-baseline: middle;
   letter-spacing: 0.5px;
 }
 .lot-label-acres {
   font-family: 'Jost', sans-serif;
-  font-size: 9px;
-  font-weight: 400;
-  fill: #6b7a5a;
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  fill: #231f20;
   text-anchor: middle;
   dominant-baseline: middle;
+}
+.lot-label-sold {
+  font-family: 'minion-pro', Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  fill: #ed1c24;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.lot-label-group.label-selected .lot-label-badge {
+  fill: #231f20;
+  stroke: #ffffff;
 }
 .lot-label-group.label-selected .lot-label-num,
 .lot-label-group.label-selected .lot-label-acres {
@@ -69,25 +90,25 @@
 /* ── Roads ─────────────────────────────────────────────────────────── */
 .road-fill {
   fill: none;
-  stroke: #cac4b4;
+  stroke: #cfceca;
   stroke-width: 35;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.road-interior { fill: #cac4b4; stroke: none; pointer-events: none; }
+.road-interior { fill: #cfceca; stroke: none; pointer-events: none; }
 .road-edge {
   fill: none;
-  stroke: #b5ad9e;
-  stroke-width: 2;
+  stroke: #231f20;
+  stroke-width: 1.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .road-label {
-  font-family: 'Jost', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  fill: #8a8274;
-  letter-spacing: 3px;
+  font-family: 'minion-pro', Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  fill: #231f20;
+  letter-spacing: 4px;
   text-transform: uppercase;
   pointer-events: none;
 dominant-baseline: central;
@@ -96,14 +117,14 @@ dominant-baseline: central;
 /* ── Water ─────────────────────────────────────────────────────────── */
 .stream-tob {
   fill: none;
-  stroke: #7aabbf;
+  stroke: #8aa7a0;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .stream-buffer {
-  fill: #a7d2e3;
-  stroke: #7aabbf;
+  fill: #aac4ba;
+  stroke: #8aa7a0;
   stroke-width: 1;
   stroke-dasharray: 0;
   opacity: 1;
@@ -129,12 +150,12 @@ dominant-baseline: central;
 .esmt-closed { fill: darkorange; fill-opacity: 0.25; }
 
 /* ── Open space ────────────────────────────────────────────────────── */
-.open-space   { fill: #7a9e62; opacity: 0.5; }
-#topo-fill    { color: #2d5a1e; }
+.open-space   { fill: #879a77; opacity: 0.6; }
+#topo-fill    { color: #44543a; }
 #open-space-border {
   fill: none;
   pointer-events: none;
-  stroke: #8a9e72;
+  stroke: #6c804b;
   stroke-width: 1.5;
 }
 
@@ -156,11 +177,11 @@ dominant-baseline: central;
 
 /* ── Area labels ───────────────────────────────────────────────────── */
 .area-label {
-  font-family: 'Jost', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 2px;
-  fill: #7a8068;
+  font-family: 'minion-pro', Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  fill: #231f20;
   text-anchor: middle;
   pointer-events: none;
 }

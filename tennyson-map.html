@@ -188,7 +188,7 @@
     flex: 1;
     overflow: hidden;
     position: relative;
-    background: #eae6dc;
+    background: #fbfaf6;
   }
   svg#map-svg {
     display: block;
@@ -1592,6 +1592,11 @@ function rebuildFromCSV(rows) {
   });
   BUILDER_DATA = [...builderMap.values()];
   BUILDER_DATA.forEach(b => b.lots.forEach(id => builderByLot[id] = b));
+  // Poster-style fills: each lot takes its builder's color; unassigned → sage
+  LOT_DATA.forEach(lot => {
+    const el = document.getElementById('lot-' + lot.id);
+    if (el) el.style.setProperty('--lot-fill', (builderByLot[lot.id] || {}).color || '#9fa995');
+  });
 }
 
 // ── Polygon centroid (area-weighted, not vertex mean) ─────────────
@@ -1651,9 +1656,38 @@ function populateLabels(rows) {
     }
     const numEl = g.querySelector('.lot-label-num');
     const acresEl = g.querySelector('.lot-label-acres');
-    if (numEl) numEl.textContent = 'Lot ' + row.lot_number;
-    if (acresEl) acresEl.textContent = row.acres + ' ac';
+    // Poster-style ring badge around the lot number
+    let badge = g.querySelector('.lot-label-badge');
+    if (!badge && numEl) {
+      badge = document.createElementNS(ns, 'circle');
+      badge.classList.add('lot-label-badge');
+      badge.setAttribute('cx', '0');
+      badge.setAttribute('cy', '-8');
+      badge.setAttribute('r', '12');
+      g.insertBefore(badge, g.firstChild);
+    }
+    let soldEl = g.querySelector('.lot-label-sold');
+    if (!soldEl) {
+      soldEl = document.createElementNS(ns, 'text');
+      soldEl.classList.add('lot-label-sold');
+      soldEl.setAttribute('x', '0');
+      soldEl.setAttribute('y', '-27');
+      g.appendChild(soldEl);
+    }
+    if (numEl) numEl.textContent = row.lot_number;
+    if (acresEl) {
+      acresEl.setAttribute('y', '10');   /* clear the r=12 badge ring */
+      acresEl.textContent = (+row.acres).toFixed(4) + ' AC';
+    }
+    soldEl.textContent = (statuses[row.lot_id] || row.status) === 'sold' ? 'SOLD' : '';
   });
+}
+
+// Sync the red SOLD mark in a lot's label group with its current status
+function updateSoldLabel(id) {
+  const g = document.querySelector(`.lot-label-group[data-lot-id="${id}"]`);
+  const t = g && g.querySelector('.lot-label-sold');
+  if (t) t.textContent = statuses[id] === 'sold' ? 'SOLD' : '';
 }
 
 // ── Rebuild builder legend HTML from BUILDER_DATA ─────────────────
@@ -1824,6 +1858,7 @@ function setStatus(status) {
   statuses[selectedId] = status;
   const el = document.getElementById('lot-' + selectedId);
   if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(status); }
+  updateSoldLabel(selectedId);
   renderBadge(status);
   updateStats();
   applyStatusFilter();
@@ -2266,6 +2301,7 @@ function cycleStatus(id) {
   statuses[id] = next;
   const el = document.getElementById('lot-' + id);
   if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(next); }
+  updateSoldLabel(id);
   updateStats();
   applyStatusFilter();
 }
@@ -3677,6 +3713,8 @@ const EXPORT_CSS_BW = [
   // White outer stroke + hard drop shadow on lot labels for legibility
   ".lot-label-num{fill:#000000;paint-order:stroke fill;stroke:#ffffff;stroke-width:3;stroke-linejoin:round;filter:url(#export-label-shadow)}",
   ".lot-label-acres{fill:#000000;paint-order:stroke fill;stroke:#ffffff;stroke-width:2;stroke-linejoin:round;filter:url(#export-label-shadow)}",
+  ".lot-label-badge{fill:none;stroke:#000000}",
+  ".lot-label-sold{fill:#000000}",
   ".stream-tob{stroke:#000000}",
   ".stream-buffer{stroke:#000000}",
   ".easement{stroke:#000000}",
