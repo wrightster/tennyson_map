@@ -207,7 +207,13 @@ dominant-baseline: central;
 #plat-overlay,
 #topo-overlay { transition: opacity 0.35s; }
 
+/* ── Tree layer ────────────────────────────────────────────────────── */
+.tree-layer { pointer-events: none; }
+.tree-layer use { fill: #4a6b35; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.45)); }
+
 /* ── Edit mode ─────────────────────────────────────────────────────── */
+#tree-edge-pick-layer { pointer-events: none; }
+#tree-edge-pick-layer line { pointer-events: visibleStroke; cursor: pointer; }
 #map-svg.edit-mode .lot { cursor: crosshair; }
 #map-svg.edit-mode .lot-label-group {
   cursor: grab;
