@@ -1750,11 +1750,6 @@ function injectStrokeLayer() {
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   g.id = 'lot-stroke-layer';
   document.querySelectorAll('.lot').forEach(lot => {
-    // Set filter as SVG presentation attribute (not CSS) to force per-element isolation.
-    // CSS filter on identical elements in the same parent can be batch-composited by
-    // the browser, making all lots act as one shape and breaking the inner glow.
-    lot.setAttribute('filter', 'url(#grainy-inner-glow)');
-
     const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
     poly.setAttribute('points', lot.getAttribute('points'));
     poly.dataset.lot = lot.dataset.lot;

@@ -33,7 +33,8 @@
   stroke: #ffffff;
   stroke-width: 2.5;
 }
-/* Patterns temporarily disabled (grainy-inner-glow filter needs clean SourceAlpha)
+/* Status patterns disabled — lots use builder-color fills (--lot-fill) per the poster design
+
 .show-status .lot.available { fill: url(#pat-available); }
 .show-status .lot.sold      { fill: url(#pat-sold); }
 .show-status .lot.reserved  { fill: url(#pat-reserved); }
