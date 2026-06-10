@@ -139,7 +139,7 @@ dominant-baseline: central;
   opacity: 0.5;
 }
 .esmt {
-  stroke: darkorange;
+  stroke: red;
   stroke-width: 2;
   stroke-dasharray: 6 3;
   stroke-linejoin: round;
@@ -147,10 +147,10 @@ dominant-baseline: central;
   pointer-events: none;
 }
 .esmt-open  { fill: none; }
-.esmt-closed { fill: darkorange; fill-opacity: 0.25; }
+.esmt-closed { fill: none; }
 
 /* ── Open space ────────────────────────────────────────────────────── */
-.open-space   { fill: #879a77; opacity: 0.6; }
+.open-space   { fill: #879a77; opacity: 1; }
 #topo-fill    { color: #44543a; }
 #open-space-border {
   fill: none;
@@ -181,7 +181,7 @@ dominant-baseline: central;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 3px;
-  fill: #231f20;
+  fill: #fff;
   text-anchor: middle;
   pointer-events: none;
 }

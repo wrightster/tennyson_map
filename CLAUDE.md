@@ -13,7 +13,7 @@ This is an interactive real estate lot map for **Tennyson — Phase One**, a res
 The project is split into four runtime files:
 
 - **`tennyson-map.html`** — layout, page-chrome CSS, and all JavaScript
-- **`tennyson-map.svg`** — static SVG geometry (roads, streams, easements, lot polygons, labels, background wash)
+- **`tennyson-map.svg`** — static SVG geometry (roads, streams, easements, lot polygons, labels)
 - **`tennyson-lots.csv`** — lot data (acreage, status, builder assignments, builder colors)
 - **`map-styles.css`** — shared styles for SVG map elements (lots, labels, roads, overlays)
 
@@ -44,10 +44,11 @@ The in-page **Save to Files** button (`saveToFiles()`) serializes a *sanitized c
 
 ## Design system (poster-derived)
 
-The map's look replicates `assets/Tennyson_MapPoster_barebones.svg` (the printed poster design — keep it as the visual reference):
+The map's look derives from `assets/Tennyson_MapPoster_barebones.svg` (the printed poster design — still the reference for lot fills, inks, and labels), but the on-screen background has diverged: the poster's paper canvas was dropped in favor of the site's dark slate.
 
 - **Lot fills are builder colors** by default, set via per-lot `--lot-fill` in `rebuildFromCSV()` and consumed by `.lot` in `map-styles.css`. Lots with no builder get sage `#9fa995`. Palette (stored in the CSV `builder_color`/`builder_border` columns): Colebrooke tan `#b3a186`, Thadd Roberts dark green `#4b675e`, JW2 gray-sage `#899988`, Lilium rust `#885138`, Pinnacle taupe `#887b66`.
-- **Ink**: lot boundaries, road edges, label text and ring badges use near-black `#231f20`. Roads are bone `#cfceca`. Canvas is paper white `#fbfaf6` with a radial sage wash (`#bg-wash` circle + `#bg-wash-gradient` in the SVG) under the subdivision.
+- **Ink**: lot boundaries, road edges, lot label text and ring badges use near-black `#231f20`. Roads are bone `#cfceca`. Area labels (`.area-label`: OPEN SPACE / RECREATION AREA) are white. Easements (`.esmt`) are red dashed strokes, no fill.
+- **Background**: the map floats directly on the page's slate gradient (`body` background, `--slate-800`→`--slate-900`); `.map-wrap` is transparent. The old paper-white canvas and radial sage wash are gone from the screen view — the canvas rect (`rect.st4`, `fill: none` via the SVG's internal stylesheet) is kept only because export looks it up and inlines a white/cream fill (or removes it for transparent export). Don't delete it.
 - **Labels**: serif (`minion-pro`/Georgia) lot number inside a `circle.lot-label-badge` ring, acreage as `X.XXXX AC` below, and a red (`#ed1c24`) serif `SOLD` text on sold lots — all created/synced by `populateLabels()` and `updateSoldLabel()`.
 - Selected lots invert the badge (dark fill, white text); hover lightens the fill via `color-mix`.
 - **Trees**: dark green (`#4a6b35`) tree symbols with a drop shadow, placed wherever tree shapes have been drawn in edit mode (`.tree-layer` in `map-styles.css`). The shadow is **baked into the symbol art** (`svg/tree-N.svg` gradient ellipses) — never reintroduce a CSS `drop-shadow`/`filter` on `.tree-layer use`; a per-`<use>` filter on ~1,700 trees cripples pan/zoom performance.
