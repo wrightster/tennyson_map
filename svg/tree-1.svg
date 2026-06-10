@@ -1,3 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="currentColor">
+  <defs>
+    <radialGradient id="tree1-shadow">
+      <stop offset="0" stop-color="#000" stop-opacity="0.45"/>
+      <stop offset="0.55" stop-color="#000" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="7" cy="9" rx="7.2" ry="6.8" fill="url(#tree1-shadow)"/>
   <circle cx="7" cy="7" r="6"/>
 </svg>

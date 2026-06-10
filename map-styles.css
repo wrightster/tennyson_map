@@ -10,7 +10,6 @@
   fill: var(--lot-fill, #9fa995);
   cursor: pointer;
   transition: fill 0.15s, opacity 0.25s;
-  /* filter applied as SVG presentation attribute by JS to force per-element isolation */
 }
 .lot:hover {
   fill: color-mix(in srgb, var(--lot-fill, #9fa995) 82%, #ffffff);
@@ -208,8 +207,11 @@ dominant-baseline: central;
 #topo-overlay { transition: opacity 0.35s; }
 
 /* ── Tree layer ────────────────────────────────────────────────────── */
+/* Shadows are baked into the tree symbols (svg/tree-N.svg) as gradient
+ * ellipses — do NOT add a filter here: a per-<use> drop-shadow forces the
+ * browser to blur+composite every tree individually and cripples pan/zoom. */
 .tree-layer { pointer-events: none; }
-.tree-layer use { fill: #4a6b35; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.45)); }
+.tree-layer use { fill: #4a6b35; }
 
 /* ── Edit mode ─────────────────────────────────────────────────────── */
 

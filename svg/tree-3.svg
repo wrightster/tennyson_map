@@ -1,3 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="currentColor">
+  <defs>
+    <radialGradient id="tree3-shadow">
+      <stop offset="0" stop-color="#000" stop-opacity="0.45"/>
+      <stop offset="0.55" stop-color="#000" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="7" cy="9" rx="7.6" ry="7" fill="url(#tree3-shadow)"/>
   <polygon points="7,0.5 13,3.75 13,10.25 7,13.5 1,10.25 1,3.75"/>
 </svg>

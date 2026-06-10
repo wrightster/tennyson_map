@@ -20,7 +20,7 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Files the client is allowed to write (whitelist for safety)
-ALLOWED_FILES = {'tennyson-lots.csv', 'tennyson-map.svg', 'map-styles.css'}
+ALLOWED_FILES = {'tennyson-lots.csv', 'tennyson-map.svg', 'map-styles.css', 'tennyson-trees.json'}
 
 
 class DevHandler(http.server.SimpleHTTPRequestHandler):

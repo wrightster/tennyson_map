@@ -31,13 +31,16 @@ The project is split into four runtime files:
 3. CSV rows are parsed → `LOT_DATA`, `BUILDER_DATA`, `statuses`, `builderByLot` are built; each lot polygon gets a per-element `--lot-fill` CSS variable (its builder's color)
 4. Lot labels populated from CSV (ring badge + number + acreage + SOLD mark), builder legend HTML rebuilt
 5. Status classes applied to lot polygons, `init()` called
-6. Tree layer built: `injectTreeLayer()` fetches `svg/tree-{1..3}.svg` into `<symbol>`s and `rebuildTreeLayer()` scatters `<use>` elements from the user-drawn tree shapes stored in localStorage
+6. Tree layer built: `injectTreeLayer()` fetches `svg/tree-{1..3}.svg` into `<symbol>`s and `rebuildTreeLayer()` scatters `<use>` elements from the user-drawn tree shapes (loaded from `tennyson-trees.json` / localStorage, most-recent-wins)
 
 ### Data files (served alongside HTML):
 
 - `tennyson-lots.csv` — lot data in CSV format. **Edit this to update statuses, acreage, builders, and builder colors.**
 - `tennyson-map.svg` — full SVG geometry. Edit this for geometry changes (roads, easements, lot polygons).
 - `map-styles.css` — edit this for visual styling of map elements (also used by export, which strips edit-mode rules).
+- `tennyson-trees.json` — user-drawn tree shapes (`{savedAt, polygons, lines}`), written by the shape editor via `POST /save`.
+
+The in-page **Save to Files** button (`saveToFiles()`) serializes a *sanitized clone* of the SVG: runtime-generated layers (`#tree-layer`, `#lot-stroke-layer`, builder dots/masks, editor overlays), CSV-derived label text, per-lot `--lot-fill` styles, and the pan/zoom viewBox are stripped before writing, so `tennyson-map.svg` stays pure geometry. Keep it that way — baked runtime layers once bloated the file from 73KB to 336KB.
 
 ## Design system (poster-derived)
 
@@ -47,13 +50,13 @@ The map's look replicates `assets/Tennyson_MapPoster_barebones.svg` (the printed
 - **Ink**: lot boundaries, road edges, label text and ring badges use near-black `#231f20`. Roads are bone `#cfceca`. Canvas is paper white `#fbfaf6` with a radial sage wash (`#bg-wash` circle + `#bg-wash-gradient` in the SVG) under the subdivision.
 - **Labels**: serif (`minion-pro`/Georgia) lot number inside a `circle.lot-label-badge` ring, acreage as `X.XXXX AC` below, and a red (`#ed1c24`) serif `SOLD` text on sold lots — all created/synced by `populateLabels()` and `updateSoldLabel()`.
 - Selected lots invert the badge (dark fill, white text); hover lightens the fill via `color-mix`.
-- **Trees**: dark green (`#4a6b35`) tree symbols with a drop shadow, placed wherever tree shapes have been drawn in edit mode (`.tree-layer` in `map-styles.css`).
+- **Trees**: dark green (`#4a6b35`) tree symbols with a drop shadow, placed wherever tree shapes have been drawn in edit mode (`.tree-layer` in `map-styles.css`). The shadow is **baked into the symbol art** (`svg/tree-N.svg` gradient ellipses) — never reintroduce a CSS `drop-shadow`/`filter` on `.tree-layer use`; a per-`<use>` filter on ~1,700 trees cripples pan/zoom performance.
 
 ## Tree placement system
 
 All trees come from user-drawn shapes — there is no tree geometry in `tennyson-map.svg` and no automatic edge-based placement:
 
-- `CUSTOM_TREE_POLYGONS` (interiors filled with trees on a jittered hex grid; `fillSpacing`/`fillScatter` in `TREE_CONFIG`) and `CUSTOM_TREE_LINES` (trees along every segment) are the only placement sources. They persist in localStorage under `tennyson-custom-trees` — per-browser, not saved to disk.
+- `CUSTOM_TREE_POLYGONS` (interiors filled with trees on a jittered hex grid; `fillSpacing`/`fillScatter` in `TREE_CONFIG`) and `CUSTOM_TREE_LINES` (trees along every segment) are the only placement sources. They persist in **`tennyson-trees.json`** (written via `POST /save` whenever a shape is edited, so the design is shared and versioned) and in localStorage under `tennyson-custom-trees` (fallback for edits made without the dev server). Each save carries a `savedAt` timestamp; load picks the newer of the two.
 - `TREE_CONFIG` (in the HTML JS) holds the tuning knobs: spacing, scatter, scale/variance, fill grid density, deterministic `seed`, road falloff distances, etc.
 - `rebuildTreeLayer()` turns the shapes into seeded-random `<use href="#tree-symbol-N">` elements. Trees that land inside `.road-interior` polygons are pushed off (`pushOffRoad()`); trees near road segments (`.road-edge` polylines + the `lawrence-road-path`/`tennyson-court-path` centerlines) are scaled down.
 - The three symbol variants are fetched from `svg/tree-{1..3}.svg` and injected into the hidden `<svg id="svg-filter-defs">` defs block at the bottom of the HTML (kept there, not in the geometry SVG, so they survive SVG re-exports). Export (`_buildExportSVG()`) copies them into the exported SVG's own defs and strips the shape-editor overlay.

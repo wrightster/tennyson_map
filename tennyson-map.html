@@ -1758,7 +1758,7 @@ async function loadResources() {
   });
   init();
   injectStrokeLayer();
-  loadCustomTreeShapes();
+  await loadCustomTreeShapes();
   if (treesVisible) await injectTreeLayer();
   initEditHandlers();
   initTreeShapeHandlers();
@@ -1949,36 +1949,60 @@ async function fetchAndInjectTreeSymbols() {
   const defs = document.querySelector('#svg-filter-defs defs');
   if (!defs) return;
   document.querySelectorAll('[id^="tree-symbol-"]').forEach(el => el.remove());
-  for (let i = 1; i <= TREE_CONFIG.variants; i++) {
-    try {
-      const resp = await fetch(`svg/tree-${i}.svg`, { cache: 'no-store' });
-      const text = await resp.text();
-      const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-      const sym = document.createElementNS('http://www.w3.org/2000/svg', 'symbol');
-      sym.id = `tree-symbol-${i}`;
-      sym.setAttribute('viewBox', '0 0 14 14');
-      Array.from(doc.documentElement.childNodes).forEach(n => sym.appendChild(document.importNode(n, true)));
-      defs.appendChild(sym);
-    } catch(e) { console.warn('tree symbol fetch failed', i, e); }
+  const texts = await Promise.all(
+    Array.from({ length: TREE_CONFIG.variants }, (_, i) =>
+      fetch(`svg/tree-${i + 1}.svg`).then(r => r.text())
+        .catch(e => { console.warn('tree symbol fetch failed', i + 1, e); return null; })
+    )
+  );
+  texts.forEach((text, i) => {
+    if (!text) return;
+    const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+    const sym = document.createElementNS('http://www.w3.org/2000/svg', 'symbol');
+    sym.id = `tree-symbol-${i + 1}`;
+    sym.setAttribute('viewBox', '0 0 14 14');
+    // Baked shadow ellipses extend past the 14×14 tile — don't clip them
+    sym.setAttribute('overflow', 'visible');
+    Array.from(doc.documentElement.childNodes).forEach(n => sym.appendChild(document.importNode(n, true)));
+    defs.appendChild(sym);
+  });
+}
+
+// Tree shapes load from tennyson-trees.json (shared, versioned) and from
+// localStorage (survives edits made without the dev server running);
+// whichever was saved most recently wins.
+async function loadCustomTreeShapes() {
+  let fileData = null, localData = null;
+  try {
+    const resp = await fetch('tennyson-trees.json');
+    if (resp.ok) fileData = await resp.json();
+  } catch(e) {}
+  try {
+    const v = localStorage.getItem(_LS_CUSTOM_TREES);
+    if (v) localData = JSON.parse(v);
+  } catch(e) {}
+  const pick = (fileData && localData)
+    ? ((localData.savedAt || 0) > (fileData.savedAt || 0) ? localData : fileData)
+    : (fileData || localData);
+  if (pick) {
+    CUSTOM_TREE_POLYGONS = pick.polygons || [];
+    CUSTOM_TREE_LINES = pick.lines || [];
   }
 }
 
-function loadCustomTreeShapes() {
-  try {
-    const v = localStorage.getItem(_LS_CUSTOM_TREES);
-    if (v) {
-      const parsed = JSON.parse(v);
-      CUSTOM_TREE_POLYGONS = parsed.polygons || [];
-      CUSTOM_TREE_LINES = parsed.lines || [];
-    }
-  } catch(e) {}
-}
-
 function saveCustomTreeShapes() {
-  localStorage.setItem(_LS_CUSTOM_TREES, JSON.stringify({
+  const payload = JSON.stringify({
+    savedAt: Date.now(),
     polygons: CUSTOM_TREE_POLYGONS,
     lines: CUSTOM_TREE_LINES,
-  }));
+  });
+  localStorage.setItem(_LS_CUSTOM_TREES, payload);
+  // Persist to disk when the dev server is running; silently a no-op on static hosting
+  fetch('/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({filename: 'tennyson-trees.json', content: payload})
+  }).catch(() => {});
 }
 
 function rebuildTreeLayer() {
@@ -2062,7 +2086,7 @@ function rebuildTreeLayer() {
     u.setAttribute('href', `#tree-symbol-${variant}`);
     u.setAttribute('width', '14');
     u.setAttribute('height', '14');
-    u.setAttribute('transform', `translate(${x},${y}) scale(${s}) translate(-7,-7)`);
+    u.setAttribute('transform', `translate(${x.toFixed(2)},${y.toFixed(2)}) scale(${s.toFixed(3)}) translate(-7,-7)`);
     g.appendChild(u);
   });
 
@@ -2563,9 +2587,17 @@ function updateStats() {
   document.getElementById('s-reserved').textContent = vals.filter(s => s === 'reserved').length;
 }
 
+// Coalesce viewBox writes to one per frame: wheel/mousemove can fire far
+// faster than the display refreshes, and every write repaints the whole SVG.
+let _vbWritePending = false;
 function applyTransform() {
-  document.getElementById('map-svg').setAttribute('viewBox',
-    `${-20/scale - panX/scale} ${-20/scale - panY/scale} ${VB_W/scale} ${VB_H/scale}`);
+  if (_vbWritePending) return;
+  _vbWritePending = true;
+  requestAnimationFrame(() => {
+    _vbWritePending = false;
+    document.getElementById('map-svg').setAttribute('viewBox',
+      `${-20/scale - panX/scale} ${-20/scale - panY/scale} ${VB_W/scale} ${VB_H/scale}`);
+  });
 }
 
 function adjustZoom(factor) {
@@ -3141,11 +3173,31 @@ async function saveToFiles() {
   // Always persist label positions and CSS to localStorage
   _persistLabelState();
 
-  // Serialize live SVG DOM back to text, stripping transient UI classes
+  // Serialize a sanitized clone of the SVG DOM: runtime-generated layers
+  // (trees, lot strokes, builder dots, editor overlays) and CSV-derived state
+  // are rebuilt on every load and must NOT leak into the geometry file.
   const svgEl = document.getElementById('map-svg');
-  svgEl.querySelectorAll('.edit-pick-selected').forEach(el => el.classList.remove('edit-pick-selected'));
+  const clone = svgEl.cloneNode(true);
+  clone.querySelectorAll(
+    '#tree-layer, #lot-stroke-layer, #tree-shape-layer, #tree-draw-preview,' +
+    ' #vertex-anchor-layer, #builder-erode, [id^="builder-mask-"], [id^="builder-clip-"]'
+  ).forEach(el => el.remove());
+  clone.querySelectorAll('#builder-dots > *').forEach(el => el.remove());
+  clone.querySelectorAll('.lot-label-num, .lot-label-acres, .lot-label-sold')
+    .forEach(el => el.textContent = '');
+  clone.querySelectorAll('.edit-pick-selected').forEach(el => el.classList.remove('edit-pick-selected'));
+  clone.querySelectorAll('.lot').forEach(el => {
+    el.style.removeProperty('--lot-fill');
+    if (!el.getAttribute('style')) el.removeAttribute('style');
+  });
+  clone.classList.remove('edit-mode', 'style-picker-mode');
+  if (!clone.getAttribute('class')) clone.removeAttribute('class');
+  // Reset the pan/zoom-mutated viewBox to the canonical canvas
+  clone.setAttribute('viewBox', `-20 -20 ${VB_W} ${VB_H}`);
   const svgContent = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    new XMLSerializer().serializeToString(svgEl);
+    new XMLSerializer().serializeToString(clone);
+  // Persist tree shapes alongside (writes tennyson-trees.json via /save)
+  saveCustomTreeShapes();
 
   try {
     const [csvResp, svgResp] = await Promise.all([
