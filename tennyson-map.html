@@ -374,6 +374,15 @@
   .edit-tool-btn:hover { background: #e4e8eb; }
   .edit-tool-btn.primary { background: var(--slate-600); color: #fff; border-color: var(--slate-600); }
   .edit-tool-btn.primary:hover { background: var(--slate-700); }
+  #btn-tree-shapes.active { background: #3f5d33; border-color: #3f5d33; color: #fff; }
+  #tree-shape-tools {
+    display: none;
+    margin: 4px 0 6px;
+    padding: 2px 0 4px 8px;
+    border-left: 2px solid #4a6b35;
+  }
+  #tree-shape-tools.open { display: block; }
+  #tree-shape-tools .edit-tool-btn.active { background: #00798c; border-color: #00798c; color: #fff; }
 
   /* CSS editor floating panel */
   #css-editor-panel {
@@ -1328,7 +1337,13 @@
       <button class="edit-tool-btn" id="pick-elem-btn" onclick="toggleStylePicker()">&#9654; Pick Element Style</button>
       <button class="edit-tool-btn" onclick="openCSSEditor()">Edit Map CSS</button>
       <button class="edit-tool-btn" onclick="openElemPanel()">&#9776; Elements</button>
-      <button class="edit-tool-btn" id="btn-tree-edges" onclick="toggleTreeEdgePick()">&#127795; Tree Edges</button>
+      <button class="edit-tool-btn" id="btn-tree-shapes" onclick="toggleTreeShapeMode()">&#127794; Tree Shapes</button>
+      <div id="tree-shape-tools">
+        <button class="edit-tool-btn" id="btn-draw-tree-poly" onclick="startTreeShapeDraw('poly')">&#11039; Draw Tree Polygon</button>
+        <button class="edit-tool-btn" id="btn-draw-tree-line" onclick="startTreeShapeDraw('line')">&#12316; Draw Tree Line</button>
+        <button class="edit-tool-btn" id="btn-del-tree-shape" onclick="deleteSelectedTreeShape()" style="display:none">&#10005; Delete Shape</button>
+        <div class="edit-hint" style="margin-top:6px"><b>Draw:</b> click to add points, double&#8209;click or <b>Enter</b> to finish, <b>Esc</b> to cancel.<br><b>Edit:</b> click a shape to select, drag points, double&#8209;click an edge to add a point, double&#8209;right&#8209;click a point to remove it, <b>Delete</b> removes the shape.</div>
+      </div>
       <button class="edit-tool-btn" onclick="resetAllLabels()">Reset Label Positions</button>
       <button class="edit-tool-btn primary" onclick="copyEditChanges()">Copy Changes</button>
       <button class="edit-tool-btn primary" id="save-files-btn" onclick="saveToFiles()" style="display:none">Save to Files</button>
@@ -1743,9 +1758,10 @@ async function loadResources() {
   });
   init();
   injectStrokeLayer();
-  loadExcludedEdges();
+  loadCustomTreeShapes();
   if (treesVisible) await injectTreeLayer();
   initEditHandlers();
+  initTreeShapeHandlers();
   captureOrigLabelTransforms();
 }
 
@@ -1776,24 +1792,25 @@ const TREE_CONFIG = {
   scatterAlong: 6,
   scale: 1.5,
   scaleVariance: 0.5,
-  roadProximityThreshold: 40,
   insetFromEdge: 0,
-  minEdgeLength: 20,
   seed: 12345,
   variants: 3,
-  sparseSpacingMult: 1.5,   // spacing multiplier for sparse edges
-  sparseScatterMult: .8,    // scatter multiplier for sparse edges
-  sparseScaleMult: 0.7,     // scale multiplier for sparse edges
   roadFalloffDist: 80,     // distance from road where shrinking begins
   roadFalloffInner: 20,    // distance from road where scale is clamped to roadScaleMin
   roadScaleMin: 0.7,       // minimum scale multiplier applied at roadFalloffInner and closer
   roadPushMargin: 5,       // SVG units to offset trees pushed off road polygons
+  fillSpacing: 14,         // grid spacing for filling custom tree polygons
+  fillScatter: 5,          // jitter applied to fill-grid positions
 };
 let treesVisible = true;
-let treeEdgePickMode = false;
-let EXCLUDED_TREE_EDGES = new Set();
-let SPARSE_TREE_EDGES = new Set();
-const _LS_TREE_EDGES = 'tennyson-excl-tree-edges';
+// Custom drawn tree shapes (edit mode → Tree Shapes). Per-browser localStorage.
+let CUSTOM_TREE_POLYGONS = [];  // each: [[x,y], ...] — interior filled with trees
+let CUSTOM_TREE_LINES = [];     // each: [[x,y], ...] — trees along the polyline
+const _LS_CUSTOM_TREES = 'tennyson-custom-trees';
+let treeShapeMode = false;      // shape edit overlay active
+let _treeDraw = null;           // { type:'poly'|'line', pts:[[x,y],...] } while drawing
+let _treeShapeSel = null;       // { type:'poly'|'line', idx } selected shape
+let _treeShapeDrag = null;      // active vertex drag on a custom shape
 
 function parsePointsAttr(pts) {
   const nums = pts.trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
@@ -1908,14 +1925,6 @@ function buildRoadSegments() {
   return segs;
 }
 
-function isEdgeNearRoad(ax, ay, bx, by, roadSegs, threshold) {
-  const mx = (ax + bx) / 2, my = (ay + by) / 2;
-  for (const [rax, ray, rbx, rby] of roadSegs) {
-    if (pointSegmentDist(mx, my, rax, ray, rbx, rby) < threshold) return true;
-  }
-  return false;
-}
-
 function placeTreesAlongEdge(ax, ay, bx, by, rand, cfg) {
   const edgeLen = Math.hypot(bx - ax, by - ay);
   if (edgeLen < 1e-6) return [];
@@ -1954,56 +1963,22 @@ async function fetchAndInjectTreeSymbols() {
   }
 }
 
-function edgeKey(ax, ay, bx, by) {
-  return ax < bx || (ax === bx && ay < by)
-    ? `${ax},${ay}|${bx},${by}`
-    : `${bx},${by}|${ax},${ay}`;
-}
-
-function loadExcludedEdges() {
+function loadCustomTreeShapes() {
   try {
-    const v = localStorage.getItem(_LS_TREE_EDGES);
+    const v = localStorage.getItem(_LS_CUSTOM_TREES);
     if (v) {
       const parsed = JSON.parse(v);
-      // support old format (plain array) and new format ({excluded, sparse})
-      if (Array.isArray(parsed)) {
-        EXCLUDED_TREE_EDGES = new Set(parsed);
-        SPARSE_TREE_EDGES = new Set();
-      } else {
-        EXCLUDED_TREE_EDGES = new Set(parsed.excluded || []);
-        SPARSE_TREE_EDGES = new Set(parsed.sparse || []);
-      }
+      CUSTOM_TREE_POLYGONS = parsed.polygons || [];
+      CUSTOM_TREE_LINES = parsed.lines || [];
     }
   } catch(e) {}
 }
 
-function saveExcludedEdges() {
-  localStorage.setItem(_LS_TREE_EDGES, JSON.stringify({
-    excluded: [...EXCLUDED_TREE_EDGES],
-    sparse: [...SPARSE_TREE_EDGES],
+function saveCustomTreeShapes() {
+  localStorage.setItem(_LS_CUSTOM_TREES, JSON.stringify({
+    polygons: CUSTOM_TREE_POLYGONS,
+    lines: CUSTOM_TREE_LINES,
   }));
-}
-
-// Parse M/L-only SVG path d attr → consecutive edge segments [[ax,ay,bx,by], ...]
-function parseMLPathEdges(d) {
-  const coords = [];
-  (d || '').trim().split(/(?=[ML])/).forEach(seg => {
-    const m = seg.trim().match(/^[ML]\s*([\d.]+)[,\s]+([\d.]+)/);
-    if (m) coords.push([+m[1], +m[2]]);
-  });
-  const edges = [];
-  for (let i = 0; i < coords.length - 1; i++)
-    edges.push([coords[i][0], coords[i][1], coords[i+1][0], coords[i+1][1]]);
-  return edges;
-}
-
-// All edges from easement paths (visible or not)
-function getEasementEdges() {
-  const edges = [];
-  document.querySelectorAll('#easement-overlay path').forEach(el => {
-    parseMLPathEdges(el.getAttribute('d')).forEach(e => edges.push(e));
-  });
-  return edges;
 }
 
 function rebuildTreeLayer() {
@@ -2013,54 +1988,35 @@ function rebuildTreeLayer() {
   if (old) old.remove();
 
   const cfg = TREE_CONFIG;
-  const sparseCfg = {
-    ...cfg,
-    spacing: cfg.spacing * cfg.sparseSpacingMult,
-    scatter: cfg.scatter * cfg.sparseScatterMult,
-    scale: cfg.scale * cfg.sparseScaleMult,
-  };
-  const edgeCfg = key => SPARSE_TREE_EDGES.has(key) ? sparseCfg : cfg;
   const rand = seededRand(cfg.seed);
   const placements = [];
 
-  // Open space perimeter edges
-  const osEl = document.getElementById('open-space');
-  if (osEl && osEl.getAttribute('points')) {
-    const coords = parsePointsAttr(osEl.getAttribute('points'));
-    for (let i = 0; i < coords.length; i++) {
-      const [ax, ay] = coords[i];
-      const [bx, by] = coords[(i + 1) % coords.length];
-      const edgeLen = Math.hypot(bx - ax, by - ay);
-      if (edgeLen < cfg.minEdgeLength) continue;
-      const key = edgeKey(ax, ay, bx, by);
-      if (EXCLUDED_TREE_EDGES.has(key)) continue;
-      placements.push(...placeTreesAlongEdge(ax, ay, bx, by, rand, edgeCfg(key)));
-    }
-  }
-
-  // All lot edges (deduplicated by key)
-  const seen = new Set();
-  document.querySelectorAll('.lot').forEach(lot => {
-    const coords = parsePointsAttr(lot.getAttribute('points') || '');
-    for (let i = 0; i < coords.length; i++) {
-      const [ax, ay] = coords[i];
-      const [bx, by] = coords[(i + 1) % coords.length];
-      const key = edgeKey(ax, ay, bx, by);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const edgeLen = Math.hypot(bx - ax, by - ay);
-      if (edgeLen < cfg.minEdgeLength) continue;
-      if (EXCLUDED_TREE_EDGES.has(key)) continue;
-      placements.push(...placeTreesAlongEdge(ax, ay, bx, by, rand, edgeCfg(key)));
-    }
+  // Custom drawn tree lines — trees along every segment
+  CUSTOM_TREE_LINES.forEach(pts => {
+    for (let i = 0; i < pts.length - 1; i++)
+      placements.push(...placeTreesAlongEdge(pts[i][0], pts[i][1], pts[i+1][0], pts[i+1][1], rand, cfg));
   });
 
-  // Easement path edges
-  getEasementEdges().forEach(([ax, ay, bx, by]) => {
-    const key = edgeKey(ax, ay, bx, by);
-    if (EXCLUDED_TREE_EDGES.has(key)) return;
-    if (Math.hypot(bx - ax, by - ay) < cfg.minEdgeLength) return;
-    placements.push(...placeTreesAlongEdge(ax, ay, bx, by, rand, edgeCfg(key)));
+  // Custom drawn tree polygons — fill interior with a jittered hex-offset grid
+  CUSTOM_TREE_POLYGONS.forEach(poly => {
+    if (poly.length < 3) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const [x, y] of poly) {
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+    const sp = cfg.fillSpacing;
+    let row = 0;
+    for (let y = minY + sp / 2; y <= maxY; y += sp * 0.866, row++) {
+      for (let x = minX + sp / 2 + (row % 2) * sp / 2; x <= maxX; x += sp) {
+        const jx = x + (rand() - 0.5) * 2 * cfg.fillScatter;
+        const jy = y + (rand() - 0.5) * 2 * cfg.fillScatter;
+        if (!pointInPolygon(jx, jy, poly)) continue;
+        const scl = cfg.scale + (rand() - 0.5) * 2 * cfg.scaleVariance;
+        placements.push({ x: jx, y: jy, scale: Math.max(0.2, scl),
+                          variant: Math.floor(rand() * cfg.variants) + 1 });
+      }
+    }
   });
 
   // Push trees that landed inside road polygons back to road boundary
@@ -2121,8 +2077,6 @@ function rebuildTreeLayer() {
     const el = document.getElementById(id);
     if (el && el.parentNode === svg) svg.insertBefore(el, afterTree);
   });
-
-  if (treeEdgePickMode) renderTreeEdgePickLayer();
 }
 
 async function injectTreeLayer() {
@@ -2141,115 +2095,255 @@ function toggleTreeOverlay() {
   }
 }
 
-// ── Tree edge picker ───────────────────────────────────────────────
-function getAllCandidateEdges() {
-  const cfg = TREE_CONFIG;
-  const roadSegs = buildRoadSegments();
-  const result = [];
+// ── Custom tree shapes (polygons filled with trees + tree lines) ───
+const _SVG_NS = 'http://www.w3.org/2000/svg';
 
-  const osEl = document.getElementById('open-space');
-  if (osEl && osEl.getAttribute('points')) {
-    const coords = parsePointsAttr(osEl.getAttribute('points'));
-    for (let i = 0; i < coords.length; i++) {
-      const [ax, ay] = coords[i];
-      const [bx, by] = coords[(i + 1) % coords.length];
-      if (Math.hypot(bx - ax, by - ay) < cfg.minEdgeLength) continue;
-      const key = edgeKey(ax, ay, bx, by);
-      result.push({ key, ax, ay, bx, by,
-        nearRoad: isEdgeNearRoad(ax, ay, bx, by, roadSegs, cfg.roadProximityThreshold),
-        excluded: EXCLUDED_TREE_EDGES.has(key),
-        sparse: SPARSE_TREE_EDGES.has(key) });
-    }
-  }
-
-  const seen = new Set();
-  document.querySelectorAll('.lot').forEach(lot => {
-    const coords = parsePointsAttr(lot.getAttribute('points') || '');
-    for (let i = 0; i < coords.length; i++) {
-      const [ax, ay] = coords[i];
-      const [bx, by] = coords[(i + 1) % coords.length];
-      if (Math.hypot(bx - ax, by - ay) < cfg.minEdgeLength) continue;
-      const key = edgeKey(ax, ay, bx, by);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      result.push({ key, ax, ay, bx, by,
-        nearRoad: isEdgeNearRoad(ax, ay, bx, by, roadSegs, cfg.roadProximityThreshold),
-        excluded: EXCLUDED_TREE_EDGES.has(key),
-        sparse: SPARSE_TREE_EDGES.has(key) });
-    }
-  });
-
-  // Easement edges
-  const seenEsmt = new Set();
-  getEasementEdges().forEach(([ax, ay, bx, by]) => {
-    if (Math.hypot(bx - ax, by - ay) < cfg.minEdgeLength) return;
-    const key = edgeKey(ax, ay, bx, by);
-    if (seenEsmt.has(key)) return;
-    seenEsmt.add(key);
-    result.push({ key, ax, ay, bx, by,
-      nearRoad: isEdgeNearRoad(ax, ay, bx, by, roadSegs, cfg.roadProximityThreshold),
-      excluded: EXCLUDED_TREE_EDGES.has(key),
-      sparse: SPARSE_TREE_EDGES.has(key) });
-  });
-
-  return result;
+function _treeShapeList(type) {
+  return type === 'poly' ? CUSTOM_TREE_POLYGONS : CUSTOM_TREE_LINES;
 }
 
-function renderTreeEdgePickLayer() {
+function toggleTreeShapeMode() {
+  treeShapeMode = !treeShapeMode;
+  document.getElementById('btn-tree-shapes')?.classList.toggle('active', treeShapeMode);
+  document.getElementById('tree-shape-tools')?.classList.toggle('open', treeShapeMode);
+  if (!treeShapeMode) {
+    cancelTreeShapeDraw();
+    _treeShapeSel = null;
+  }
+  renderTreeShapeLayer();
+}
+
+function selectTreeShape(type, idx) {
+  _treeShapeSel = { type, idx };
+  renderTreeShapeLayer();
+}
+
+function deleteSelectedTreeShape() {
+  if (!_treeShapeSel) return;
+  _treeShapeList(_treeShapeSel.type).splice(_treeShapeSel.idx, 1);
+  _treeShapeSel = null;
+  saveCustomTreeShapes();
+  rebuildTreeLayer();
+  renderTreeShapeLayer();
+}
+
+function renderTreeShapeLayer() {
   const svg = document.getElementById('map-svg');
   if (!svg) return;
-  const old = document.getElementById('tree-edge-pick-layer');
-  if (old) old.remove();
-  if (!treeEdgePickMode) return;
+  document.getElementById('tree-shape-layer')?.remove();
+  document.getElementById('btn-del-tree-shape').style.display = _treeShapeSel ? '' : 'none';
+  if (!treeShapeMode) return;
 
-  const ns = 'http://www.w3.org/2000/svg';
-  const g = document.createElementNS(ns, 'g');
-  g.id = 'tree-edge-pick-layer';
+  const layer = document.createElementNS(_SVG_NS, 'g');
+  layer.id = 'tree-shape-layer';
 
-  getAllCandidateEdges().forEach(({ key, ax, ay, bx, by, nearRoad, excluded, sparse }) => {
-    const line = document.createElementNS(ns, 'line');
-    line.setAttribute('x1', ax); line.setAttribute('y1', ay);
-    line.setAttribute('x2', bx); line.setAttribute('y2', by);
-    line.setAttribute('stroke-width', '6');
-    line.setAttribute('stroke-linecap', 'round');
-    line.setAttribute('stroke-opacity', '0.82');
+  const addShape = (type, idx, pts) => {
+    const el = document.createElementNS(_SVG_NS, type === 'poly' ? 'polygon' : 'polyline');
+    el.setAttribute('points', pts.map(([x, y]) => `${x},${y}`).join(' '));
+    el.setAttribute('class', 'tree-shape' +
+      (_treeShapeSel && _treeShapeSel.type === type && _treeShapeSel.idx === idx ? ' selected' : ''));
+    el.addEventListener('mousedown', e => e.stopPropagation()); // don't start a pan
+    el.addEventListener('click', e => {
+      if (_treeDraw) return;
+      e.stopPropagation();
+      selectTreeShape(type, idx);
+    });
+    el.addEventListener('dblclick', e => {
+      if (_treeDraw) return;
+      e.stopPropagation(); e.preventDefault();
+      _treeShapeInsertVertex(type, idx, svgPoint(e));
+    });
+    layer.appendChild(el);
+  };
+  CUSTOM_TREE_POLYGONS.forEach((pts, i) => addShape('poly', i, pts));
+  CUSTOM_TREE_LINES.forEach((pts, i) => addShape('line', i, pts));
 
-    if (excluded) {
-      line.setAttribute('stroke', '#d63c2f');  // red — excluded
-    } else if (sparse) {
-      line.setAttribute('stroke', '#f0d020');  // yellow — sparse
-    } else if (nearRoad) {
-      line.setAttribute('stroke', '#e8a020');  // amber — near road, included (hint only)
-    } else {
-      line.setAttribute('stroke', '#2ecc71');  // green — included
-    }
-    line.addEventListener('click', ev => { ev.stopPropagation(); toggleEdgeExclusion(key); });
-    g.appendChild(line);
+  // Vertex anchors for the selected shape
+  if (_treeShapeSel) {
+    const { type, idx } = _treeShapeSel;
+    const pts = _treeShapeList(type)[idx];
+    const minPts = type === 'poly' ? 3 : 2;
+    const rcState = { circle: null, time: 0 };
+    (pts || []).forEach(([x, y], vi) => {
+      const c = document.createElementNS(_SVG_NS, 'circle');
+      c.setAttribute('cx', x);
+      c.setAttribute('cy', y);
+      c.setAttribute('r', 6);
+      c.setAttribute('class', 'vertex-anchor');
+      c.addEventListener('mousedown', e => {
+        e.stopPropagation(); e.preventDefault();
+        _treeShapeDrag = { type, idx, vi, circle: c, startSvg: svgPoint(e),
+                           origX: +c.getAttribute('cx'), origY: +c.getAttribute('cy') };
+      });
+      c.addEventListener('contextmenu', e => {
+        e.stopPropagation(); e.preventDefault();
+        const now = Date.now();
+        if (rcState.circle === c && now - rcState.time < 500) {
+          if (pts.length <= minPts) return;
+          pts.splice(vi, 1);
+          saveCustomTreeShapes();
+          rebuildTreeLayer();
+          renderTreeShapeLayer();
+        } else {
+          rcState.circle = c;
+          rcState.time = now;
+        }
+      });
+      layer.appendChild(c);
+    });
+  }
+
+  svg.appendChild(layer); // on top of everything
+}
+
+// Insert a vertex on the segment of shape (type, idx) nearest to svg point p
+function _treeShapeInsertVertex(type, idx, p) {
+  const pts = _treeShapeList(type)[idx];
+  const numSegs = type === 'poly' ? pts.length : pts.length - 1;
+  let bestDist = Infinity, bestSeg = 0, bestPt = null;
+  for (let i = 0; i < numSegs; i++) {
+    const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length];
+    const [nx, ny] = nearestPointOnSegment(p.x, p.y, ax, ay, bx, by);
+    const d = Math.hypot(p.x - nx, p.y - ny);
+    if (d < bestDist) { bestDist = d; bestSeg = i; bestPt = [nx, ny]; }
+  }
+  if (!bestPt) return;
+  pts.splice(bestSeg + 1, 0, [+bestPt[0].toFixed(1), +bestPt[1].toFixed(1)]);
+  saveCustomTreeShapes();
+  rebuildTreeLayer();
+  renderTreeShapeLayer();
+}
+
+// ── Drawing new tree shapes ────────────────────────────────────────
+function startTreeShapeDraw(type) {
+  if (!treeShapeMode) toggleTreeShapeMode();
+  cancelTreeShapeDraw();
+  _treeDraw = { type, pts: [] };
+  _treeShapeSel = null;
+  renderTreeShapeLayer();
+  document.getElementById(type === 'poly' ? 'btn-draw-tree-poly' : 'btn-draw-tree-line')
+    ?.classList.add('active');
+  document.getElementById('map-svg').style.cursor = 'crosshair';
+}
+
+function _treeDrawCleanup() {
+  document.getElementById('tree-draw-preview')?.remove();
+  document.getElementById('btn-draw-tree-poly')?.classList.remove('active');
+  document.getElementById('btn-draw-tree-line')?.classList.remove('active');
+  const svg = document.getElementById('map-svg');
+  if (svg) svg.style.cursor = '';
+  _treeDraw = null;
+}
+
+function cancelTreeShapeDraw() {
+  if (_treeDraw) _treeDrawCleanup();
+}
+
+function finishTreeShapeDraw() {
+  if (!_treeDraw) return;
+  const { type, pts } = _treeDraw;
+  // Drop trailing duplicate points (double-click fires two clicks at one spot)
+  const dupThresh = 6 / scale;
+  while (pts.length > 1 && Math.hypot(pts[pts.length-1][0] - pts[pts.length-2][0],
+                                      pts[pts.length-1][1] - pts[pts.length-2][1]) < dupThresh) pts.pop();
+  const minPts = type === 'poly' ? 3 : 2;
+  if (pts.length >= minPts) {
+    _treeShapeList(type).push(pts.map(([x, y]) => [+x.toFixed(1), +y.toFixed(1)]));
+    saveCustomTreeShapes();
+    rebuildTreeLayer();
+    _treeShapeSel = { type, idx: _treeShapeList(type).length - 1 };
+  }
+  _treeDrawCleanup();
+  renderTreeShapeLayer();
+}
+
+function _treeDrawAddPoint(p) {
+  const d = _treeDraw;
+  // Clicking the first point of a polygon (≥3 pts) closes it
+  if (d.type === 'poly' && d.pts.length >= 3 &&
+      Math.hypot(p.x - d.pts[0][0], p.y - d.pts[0][1]) < 12 / scale) {
+    finishTreeShapeDraw();
+    return;
+  }
+  d.pts.push([p.x, p.y]);
+  _renderTreeDrawPreview(p);
+}
+
+function _renderTreeDrawPreview(cursor) {
+  const svg = document.getElementById('map-svg');
+  document.getElementById('tree-draw-preview')?.remove();
+  if (!_treeDraw || !_treeDraw.pts.length) return;
+  const g = document.createElementNS(_SVG_NS, 'g');
+  g.id = 'tree-draw-preview';
+  const pl = document.createElementNS(_SVG_NS, 'polyline');
+  const allPts = cursor ? [..._treeDraw.pts, [cursor.x, cursor.y]] : _treeDraw.pts;
+  pl.setAttribute('points', allPts.map(([x, y]) => `${x},${y}`).join(' '));
+  g.appendChild(pl);
+  _treeDraw.pts.forEach(([x, y], i) => {
+    const c = document.createElementNS(_SVG_NS, 'circle');
+    c.setAttribute('cx', x);
+    c.setAttribute('cy', y);
+    c.setAttribute('r', i === 0 && _treeDraw.type === 'poly' ? 6 : 4);
+    c.setAttribute('class', 'draw-pt');
+    g.appendChild(c);
+  });
+  svg.appendChild(g);
+}
+
+function initTreeShapeHandlers() {
+  const svg = document.getElementById('map-svg');
+  if (!svg) return;
+
+  // Capture phase so draw clicks never reach lots / deselect logic
+  svg.addEventListener('click', e => {
+    if (!_treeDraw) return;
+    e.stopPropagation();
+    e.preventDefault();
+    _treeDrawAddPoint(svgPoint(e));
+  }, true);
+
+  svg.addEventListener('dblclick', e => {
+    if (!_treeDraw) return;
+    e.stopPropagation();
+    e.preventDefault();
+    finishTreeShapeDraw();
+  }, true);
+
+  svg.addEventListener('mousemove', e => {
+    if (_treeDraw && _treeDraw.pts.length) _renderTreeDrawPreview(svgPoint(e));
   });
 
-  svg.appendChild(g); // always on top
-}
+  // Vertex drag for custom shapes
+  window.addEventListener('mousemove', e => {
+    if (!_treeShapeDrag) return;
+    const sp = svgPoint(e);
+    const d = _treeShapeDrag;
+    const nx = d.origX + (sp.x - d.startSvg.x);
+    const ny = d.origY + (sp.y - d.startSvg.y);
+    d.circle.setAttribute('cx', nx);
+    d.circle.setAttribute('cy', ny);
+    const pts = _treeShapeList(d.type)[d.idx];
+    pts[d.vi] = [+nx.toFixed(1), +ny.toFixed(1)];
+    const shapeEl = document.querySelectorAll('#tree-shape-layer .tree-shape')[
+      d.type === 'poly' ? d.idx : CUSTOM_TREE_POLYGONS.length + d.idx];
+    if (shapeEl) shapeEl.setAttribute('points', pts.map(([x, y]) => `${x},${y}`).join(' '));
+  });
+  window.addEventListener('mouseup', () => {
+    if (!_treeShapeDrag) return;
+    _treeShapeDrag = null;
+    saveCustomTreeShapes();
+    rebuildTreeLayer();
+  });
 
-function toggleEdgeExclusion(key) {
-  // Cycle: normal → sparse → excluded → normal
-  if (EXCLUDED_TREE_EDGES.has(key)) {
-    EXCLUDED_TREE_EDGES.delete(key);
-    SPARSE_TREE_EDGES.delete(key);
-  } else if (SPARSE_TREE_EDGES.has(key)) {
-    SPARSE_TREE_EDGES.delete(key);
-    EXCLUDED_TREE_EDGES.add(key);
-  } else {
-    SPARSE_TREE_EDGES.add(key);
-  }
-  saveExcludedEdges();
-  rebuildTreeLayer(); // also re-renders pick layer
-}
-
-function toggleTreeEdgePick() {
-  treeEdgePickMode = !treeEdgePickMode;
-  document.getElementById('btn-tree-edges')?.classList.toggle('active', treeEdgePickMode);
-  if (treeEdgePickMode) renderTreeEdgePickLayer();
-  else { const l = document.getElementById('tree-edge-pick-layer'); if (l) l.remove(); }
+  document.addEventListener('keydown', e => {
+    if (_treeDraw && e.key === 'Enter') { e.preventDefault(); finishTreeShapeDraw(); return; }
+    if (treeShapeMode && _treeShapeSel && (e.key === 'Delete' || e.key === 'Backspace')) {
+      const t = (e.target.tagName || '').toLowerCase();
+      if (t === 'input' || t === 'textarea') return;
+      e.preventDefault();
+      deleteSelectedTreeShape();
+    }
+  });
 }
 
 function init() {
@@ -2587,6 +2681,7 @@ function initPanZoom() {
 
   // Mouse drag pan
   svg.addEventListener('mousedown', e => {
+    if (_treeDraw) return; // drawing a tree shape — clicks place points, no pan
     if (e.target.classList.contains('lot')) return;
     if (editMode && e.target.closest('.lot-label-group')) return;
     isPanning = true;
@@ -2672,6 +2767,7 @@ function toggleEditMode() {
     clearVertexAnchors();
     _epSetSelected(null);
     if (stylePickerMode) toggleStylePicker();
+    if (treeShapeMode) toggleTreeShapeMode();
   }
 }
 
@@ -3677,6 +3773,9 @@ document.addEventListener('keydown', e => {
       closeElemStylePopover(); return;
     }
     if (stylePickerMode) { toggleStylePicker(); return; }
+    if (_treeDraw) { cancelTreeShapeDraw(); return; }
+    if (_treeShapeSel) { _treeShapeSel = null; renderTreeShapeLayer(); return; }
+    if (treeShapeMode) { toggleTreeShapeMode(); return; }
     if (editMode) toggleEditMode();
   }
 });
@@ -4393,7 +4492,8 @@ async function _buildExportSVG(bw) {
 
   // Tree symbols live in #svg-filter-defs (HTML side) — copy them into the
   // export clone's defs so <use href="#tree-symbol-N"> resolves standalone
-  clone.querySelector('#tree-edge-pick-layer')?.remove();
+  clone.querySelector('#tree-shape-layer')?.remove();
+  clone.querySelector('#tree-draw-preview')?.remove();
   if (clone.querySelector('#tree-layer') && defs) {
     document.querySelectorAll('#svg-filter-defs [id^="tree-symbol-"]').forEach(sym => {
       defs.appendChild(sym.cloneNode(true));

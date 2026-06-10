@@ -31,7 +31,7 @@ The project is split into four runtime files:
 3. CSV rows are parsed → `LOT_DATA`, `BUILDER_DATA`, `statuses`, `builderByLot` are built; each lot polygon gets a per-element `--lot-fill` CSS variable (its builder's color)
 4. Lot labels populated from CSV (ring badge + number + acreage + SOLD mark), builder legend HTML rebuilt
 5. Status classes applied to lot polygons, `init()` called
-6. Tree layer built: `injectTreeLayer()` fetches `svg/tree-{1..3}.svg` into `<symbol>`s and `rebuildTreeLayer()` scatters `<use>` elements along lot/open-space/easement edges
+6. Tree layer built: `injectTreeLayer()` fetches `svg/tree-{1..3}.svg` into `<symbol>`s and `rebuildTreeLayer()` scatters `<use>` elements from the user-drawn tree shapes stored in localStorage
 
 ### Data files (served alongside HTML):
 
@@ -47,17 +47,18 @@ The map's look replicates `assets/Tennyson_MapPoster_barebones.svg` (the printed
 - **Ink**: lot boundaries, road edges, label text and ring badges use near-black `#231f20`. Roads are bone `#cfceca`. Canvas is paper white `#fbfaf6` with a radial sage wash (`#bg-wash` circle + `#bg-wash-gradient` in the SVG) under the subdivision.
 - **Labels**: serif (`minion-pro`/Georgia) lot number inside a `circle.lot-label-badge` ring, acreage as `X.XXXX AC` below, and a red (`#ed1c24`) serif `SOLD` text on sold lots — all created/synced by `populateLabels()` and `updateSoldLabel()`.
 - Selected lots invert the badge (dark fill, white text); hover lightens the fill via `color-mix`.
-- **Trees**: dark green (`#4a6b35`) tree symbols with a drop shadow ring the lots and open space (`.tree-layer` in `map-styles.css`).
+- **Trees**: dark green (`#4a6b35`) tree symbols with a drop shadow, placed wherever tree shapes have been drawn in edit mode (`.tree-layer` in `map-styles.css`).
 
-## Tree placement system (ported from preserve-west-map)
+## Tree placement system
 
-Trees are placed algorithmically at runtime — there is no tree geometry in `tennyson-map.svg`:
+All trees come from user-drawn shapes — there is no tree geometry in `tennyson-map.svg` and no automatic edge-based placement:
 
-- `TREE_CONFIG` (in the HTML JS) holds all tuning knobs: spacing, scatter, scale/variance, deterministic `seed`, road falloff distances, etc.
-- `rebuildTreeLayer()` walks the edges of every `.lot` polygon, the `#open-space` polygon, and `#easement-overlay` paths, placing seeded-random `<use href="#tree-symbol-N">` elements along each edge ≥ `minEdgeLength`. Trees that land inside `.road-interior` polygons are pushed off (`pushOffRoad()`); trees near road segments (`.road-edge` polylines + the `lawrence-road-path`/`tennyson-court-path` centerlines) are scaled down.
-- The three symbol variants are fetched from `svg/tree-{1..3}.svg` and injected into the hidden `<svg id="svg-filter-defs">` defs block at the bottom of the HTML (kept there, not in the geometry SVG, so they survive SVG re-exports). Export (`_buildExportSVG()`) copies them into the exported SVG's own defs.
+- `CUSTOM_TREE_POLYGONS` (interiors filled with trees on a jittered hex grid; `fillSpacing`/`fillScatter` in `TREE_CONFIG`) and `CUSTOM_TREE_LINES` (trees along every segment) are the only placement sources. They persist in localStorage under `tennyson-custom-trees` — per-browser, not saved to disk.
+- `TREE_CONFIG` (in the HTML JS) holds the tuning knobs: spacing, scatter, scale/variance, fill grid density, deterministic `seed`, road falloff distances, etc.
+- `rebuildTreeLayer()` turns the shapes into seeded-random `<use href="#tree-symbol-N">` elements. Trees that land inside `.road-interior` polygons are pushed off (`pushOffRoad()`); trees near road segments (`.road-edge` polylines + the `lawrence-road-path`/`tennyson-court-path` centerlines) are scaled down.
+- The three symbol variants are fetched from `svg/tree-{1..3}.svg` and injected into the hidden `<svg id="svg-filter-defs">` defs block at the bottom of the HTML (kept there, not in the geometry SVG, so they survive SVG re-exports). Export (`_buildExportSVG()`) copies them into the exported SVG's own defs and strips the shape-editor overlay.
 - The **Trees** toolbar button (`toggleTreeOverlay()`) shows/hides the layer; trees are on by default and "Reset View" re-shows them.
-- In edit mode, the **🌳 Tree Edges** button toggles a per-edge picker: clicking an edge cycles normal → sparse (yellow) → excluded (red). Choices persist in localStorage under `tennyson-excl-tree-edges` — they are per-browser, not saved to disk.
+- In edit mode, the **🌲 Tree Shapes** button toggles the shape editor: **Draw Tree Polygon** / **Draw Tree Line** start a drawing (click to place points, double-click/Enter finishes, Esc cancels; clicking a polygon's first point closes it). Click a shape to select it, drag its vertex anchors, double-click an edge to insert a vertex, double-right-click a vertex to remove it, Delete removes the whole shape.
 
 ## Key Data Structures
 

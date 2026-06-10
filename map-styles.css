@@ -212,8 +212,38 @@ dominant-baseline: central;
 .tree-layer use { fill: #4a6b35; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.45)); }
 
 /* ── Edit mode ─────────────────────────────────────────────────────── */
-#tree-edge-pick-layer { pointer-events: none; }
-#tree-edge-pick-layer line { pointer-events: visibleStroke; cursor: pointer; }
+
+/* Custom tree shapes (edit mode → Tree Shapes) */
+#tree-shape-layer polygon.tree-shape {
+  fill: rgba(74, 107, 53, 0.18);
+  stroke: #4a6b35;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+  cursor: pointer;
+  pointer-events: all;
+}
+#tree-shape-layer polyline.tree-shape {
+  fill: none;
+  stroke: #4a6b35;
+  stroke-width: 4;
+  stroke-dasharray: 6 4;
+  stroke-linecap: round;
+  cursor: pointer;
+  pointer-events: visibleStroke;
+}
+#tree-shape-layer polyline.tree-shape:hover { stroke-width: 5; }
+#tree-shape-layer polygon.tree-shape:hover { fill: rgba(74, 107, 53, 0.3); }
+#tree-shape-layer .tree-shape.selected { stroke: #00aacc; }
+#tree-shape-layer polygon.tree-shape.selected { fill: rgba(0, 170, 204, 0.12); }
+#tree-draw-preview { pointer-events: none; }
+#tree-draw-preview polyline {
+  fill: none;
+  stroke: #00aacc;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+#tree-draw-preview .draw-pt { fill: #ffffff; stroke: #00aacc; stroke-width: 2; }
+
 #map-svg.edit-mode .lot { cursor: crosshair; }
 #map-svg.edit-mode .lot-label-group {
   cursor: grab;
