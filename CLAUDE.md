@@ -8,6 +8,8 @@ This is an interactive real estate lot map for **Tennyson — Phase One**, a res
 
 **To preview:** run `python dev-server.py [port]` (default 8765, opens at `/tennyson-map.html`) and use that — it also enables the in-page edit mode's `POST /save` back to disk (whitelist: `ALLOWED_FILES` in `dev-server.py`). A plain `python -m http.server` works for read-only previewing. The HTML fetches its companion files via `fetch()` so a server is always required; `file://` will not work.
 
+**Embed mode:** append `?embed` (e.g. `tennyson-map.html?embed=1`) to render the map for iframe embedding — all page chrome and overlay UI is hidden (header, toolbar, builder legend, zoom/edit controls, info panel + form, stats bar, JWRG watermark) leaving only the SVG map, and the `html`/`body` background drops to transparent so the host page shows through. A `<script>` in `<head>` reads the param and adds an `embed` class to `<html>` before paint (no flash of chrome); the `html.embed …` CSS block does the hiding. For the transparency to show through, the embedding `<iframe>` must have no background of its own.
+
 ## Architecture
 
 The project is split into four runtime files:

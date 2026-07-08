@@ -1289,7 +1289,28 @@
     .header-btn { padding: 6px 10px; gap: 0; }
   }
 
+  /* ── Embed mode (iframe): map only, transparent background, no logo ──
+     Activated by ?embed on the URL (see head script). Hides all page
+     chrome and overlay UI so only the SVG map renders, and drops the
+     slate background so the host page shows through a transparent iframe. */
+  html.embed,
+  html.embed body { background: transparent !important; }
+  html.embed header,
+  html.embed .stats-bar,
+  html.embed .info-panel,
+  html.embed .map-toolbar,
+  html.embed #builder-legend,
+  html.embed .zoom-controls,
+  html.embed .jwrg-watermark { display: none !important; }
+
 </style>
+<script>
+  /* Enable embed mode as early as possible (before body paints) to avoid a
+     flash of chrome. Trigger: ?embed (or ?embed=1) on the URL. */
+  if (new URLSearchParams(location.search).has('embed')) {
+    document.documentElement.classList.add('embed');
+  }
+</script>
 </head>
 <body>
 
