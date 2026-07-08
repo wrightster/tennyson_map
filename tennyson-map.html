@@ -1289,19 +1289,45 @@
     .header-btn { padding: 6px 10px; gap: 0; }
   }
 
-  /* ── Embed mode (iframe): map only, transparent background, no logo ──
-     Activated by ?embed on the URL (see head script). Hides all page
-     chrome and overlay UI so only the SVG map renders, and drops the
-     slate background so the host page shows through a transparent iframe. */
+  /* ── Embed mode (iframe): map + legend/overlay toggles, transparent bg ──
+     Activated by ?embed on the URL (see head script). Drops the page chrome
+     that doesn't belong in an embed (header, stats bar, zoom controls, logo)
+     and the slate background so the host page shows through a transparent
+     iframe — but KEEPS the overlay toolbar and builder/status legend. Pan &
+     zoom are disabled in JS (initPanZoom no-ops), and the lot info panel
+     becomes a floating card (below). */
   html.embed,
   html.embed body { background: transparent !important; }
   html.embed header,
   html.embed .stats-bar,
-  html.embed .info-panel,
-  html.embed .map-toolbar,
-  html.embed #builder-legend,
   html.embed .zoom-controls,
   html.embed .jwrg-watermark { display: none !important; }
+
+  /* Pan/zoom is off in embed — show the normal pointer, not the grab hand. */
+  html.embed svg#map-svg,
+  html.embed svg#map-svg:active { cursor: default; }
+
+  /* Lot info becomes a floating card pinned to the right, shown only while a
+     lot is selected (.has-selection, toggled in openPanel/deselect). The
+     lead-gen form is dropped here — double-clicking a lot opens its full page
+     on the Tennyson site, which carries the inquiry form. */
+  html.embed .info-panel {
+    display: none;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 288px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+    border: 1px solid var(--slate-600);
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(13,18,23,0.5);
+    transform: none;
+    z-index: 30;
+  }
+  html.embed .info-panel.has-selection { display: block; }
+  html.embed .info-panel .form-section { display: none; }
+  html.embed .info-panel .panel-close { display: block; }
 
 </style>
 <script>
@@ -1556,6 +1582,13 @@
 </div>
 
 <script>
+// Embed mode (?embed on the URL) — the <head> script has already added the
+// `embed` class to <html> before paint; mirror it here for JS branching.
+const IS_EMBED = document.documentElement.classList.contains('embed');
+// Base URL for a lot's page on the public Tennyson site (double-click target
+// in embed mode). Lot ids here (1–18, a, b) match the site's /lots/{id} route.
+const TENNYSON_LOT_BASE = 'https://tennyson.jwrgnc.com/lots/';
+
 let LOT_DATA = [], BUILDER_DATA = [], builderByLot = {}, statuses = {};
 let builderView = false;
 let lotStatusOverlay = true;
@@ -2394,6 +2427,14 @@ function initTreeShapeHandlers() {
 function init() {
   document.querySelectorAll('.lot').forEach(el => {
     el.addEventListener('click', onLotClick);
+    if (IS_EMBED) {
+      // In embed mode, double-clicking a lot opens its page on the Tennyson site.
+      el.addEventListener('dblclick', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        openLotPage(el.dataset.lot);
+      });
+    }
     el.addEventListener('mouseover', () => {
       const s = document.querySelector(`#lot-stroke-layer [data-lot="${el.dataset.lot}"]`);
       if (s) s.classList.add('hovered');
@@ -2411,6 +2452,7 @@ function init() {
       selectedId = null;
       document.getElementById('no-sel').style.display = 'block';
       document.getElementById('lot-info').classList.remove('show');
+      document.getElementById('info-panel').classList.remove('has-selection');
       if (isMobile()) document.getElementById('info-panel').classList.remove('sheet-open');
       pushURLState();
     }
@@ -2665,6 +2707,7 @@ function resetView() {
   deselectAllStrokeOverlays();
   document.getElementById('no-sel').style.display = 'block';
   document.getElementById('lot-info').classList.remove('show');
+  document.getElementById('info-panel').classList.remove('has-selection');
   history.replaceState(null, '', location.pathname + location.search);
 }
 
@@ -2699,13 +2742,27 @@ function restoreFromURL() {
 
 function isMobile() { return window.innerWidth <= 768; }
 
+// Open a lot's page on the public Tennyson site. When the map is embedded in
+// an iframe, navigate the top-level window so the visitor lands on the full
+// lot page (not inside the map frame); standalone, navigate the current tab.
+function openLotPage(id) {
+  const url = TENNYSON_LOT_BASE + encodeURIComponent(id);
+  try {
+    (window.top || window).location.href = url;
+  } catch (e) {
+    // Cross-origin top navigation was blocked — fall back to a new tab.
+    window.open(url, '_blank', 'noopener');
+  }
+}
+
 function openPanel() {
   const panel = document.getElementById('info-panel');
+  panel.classList.add('has-selection'); // drives the floating card in embed mode
   if (isMobile()) panel.classList.add('sheet-open');
 }
 function closePanel() {
   const panel = document.getElementById('info-panel');
-  panel.classList.remove('sheet-open');
+  panel.classList.remove('sheet-open', 'has-selection');
   document.querySelectorAll('.lot.selected').forEach(el => el.classList.remove('selected'));
   deselectAllStrokeOverlays();
   document.querySelectorAll('.lot-label-group.label-selected').forEach(el => el.classList.remove('label-selected'));
@@ -2717,6 +2774,11 @@ function closePanel() {
 
 function initPanZoom() {
   const svg = document.getElementById('map-svg');
+
+  // Embed mode: pan & zoom are disabled. The default view (set via
+  // applyTransform in init) still renders; we just attach no interaction
+  // handlers, so the map is a fixed, framed image with clickable lots.
+  if (IS_EMBED) return;
 
   // Mouse wheel zoom
   svg.addEventListener('wheel', e => {
