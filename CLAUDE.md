@@ -110,7 +110,11 @@ At `max-width: 768px`, the info panel becomes a bottom sheet (slides up from bot
 
 ## Modifying Lot Statuses
 
-Edit the `status` column in `tennyson-lots.csv` to `available`, `sold`, or `reserved`, then reload the page. (The old embedded `lots-data` CSV block in the HTML no longer exists — the external CSV is the single source of truth.) Sold lots automatically get the red `SOLD` mark in their label group.
+**The JWRG office is the source of truth for lot status — this CSV is a copy.** It drifted from the office once already (seven lots wrong, corrected 2026-07-13), so when a status changes, change it in the office first, then bring it over here. The office serves the current statuses at `GET https://office.jwrgnc.com/api/v1/neighborhoods/tennyson/lots`; its `available`/`reserved`/`under_contract`/`not_released`/`sold` collapse to the three this map renders (`under_contract` and `not_released` → `reserved`, `common_area` lots are dropped).
+
+Copy **status only**. The other columns are the map's own: the acreage here carries the plat's 4-decimal precision (the office rounds to 3), and `builder_color`/`builder_border` are the muted poster palette, deliberately different from the office's brand colors.
+
+Mechanically: edit the `status` column in `tennyson-lots.csv` to `available`, `sold`, or `reserved`, then reload the page. (The old embedded `lots-data` CSV block in the HTML no longer exists — the external CSV is what the map reads.) Sold lots automatically get the red `SOLD` mark in their label group.
 
 ## Adding/Changing Builders
 
