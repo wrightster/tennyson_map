@@ -2543,7 +2543,6 @@ function toggleBuilderOverlay() {
   document.getElementById('btn-ov-builders').classList.toggle('active', builderView);
   document.getElementById('builder-list').classList.toggle('open', builderView);
   applyBuilderColors();
-  if (builderView) applyBuilderFilter();
   syncLegendPanelVisibility();
   pushURLState();
 }
@@ -2553,19 +2552,34 @@ function syncLegendPanelVisibility() {
   panel.style.display = (builderView || lotStatusOverlay) ? 'flex' : 'none';
 }
 
-function applyBuilderFilter() {
-  if (!builderView) return;
-  const checkedIdxs = new Set(
-    [...document.querySelectorAll('.builder-cb:checked')].map(cb => +cb.dataset.idx)
+// The builder and status checkboxes both fade lots, so they resolve in one
+// pass: a lot dims if EITHER filter excludes it. Two passes toggling .dimmed
+// independently would clobber each other, and every visible piece of a lot
+// (fill, outline, number badge, builder band) has to fade together.
+function applyLotFilters() {
+  const statusCbs = document.querySelectorAll('.status-cb');
+  const shownStatuses = statusCbs.length
+    ? new Set([...statusCbs].filter(cb => cb.checked).map(cb => cb.dataset.status))
+    : null;
+  const hiddenBuilders = new Set(
+    [...document.querySelectorAll('.builder-cb:not(:checked)')]
+      .map(cb => BUILDER_DATA[+cb.dataset.idx])
+      .filter(Boolean)
   );
-  document.querySelectorAll('.builder-dot').forEach(dot => {
-    const id = dot.dataset.lot;
+  const isDimmed = id => {
+    if (shownStatuses && !shownStatuses.has(statuses[id] || 'available')) return true;
     const b = builderByLot[id];
-    if (!b) return;
-    const idx = BUILDER_DATA.indexOf(b);
-    dot.classList.toggle('dimmed', !checkedIdxs.has(idx));
+    return builderView && !!b && hiddenBuilders.has(b);
+  };
+  document.querySelectorAll('.lot, .lot-stroke, .builder-dot').forEach(el => {
+    el.classList.toggle('dimmed', isDimmed(el.dataset.lot));
+  });
+  document.querySelectorAll('.lot-label-group').forEach(g => {
+    g.classList.toggle('dimmed', isDimmed(g.dataset.lotId));
   });
 }
+
+function applyBuilderFilter() { applyLotFilters(); }
 
 function createBuilderDots() {
   const g = document.getElementById('builder-dots');
@@ -2620,8 +2634,10 @@ function applyBuilderColors() {
   createBuilderDots();
   document.querySelectorAll('.builder-dot').forEach(dot => {
     dot.classList.toggle('show', builderView);
-    dot.classList.remove('dimmed');
   });
+  // Dots are rebuilt undimmed; re-apply the filters (and drop builder dimming
+  // from the lots themselves when the overlay goes off).
+  applyLotFilters();
 }
 
 function setFilter(filter) {
@@ -2633,14 +2649,7 @@ function setFilter(filter) {
   pushURLState();
 }
 
-function applyStatusFilter() {
-  const cbs = document.querySelectorAll('.status-cb');
-  if (!cbs.length) return;
-  const shown = new Set([...cbs].filter(cb => cb.checked).map(cb => cb.dataset.status));
-  document.querySelectorAll('.lot').forEach(el => {
-    el.classList.toggle('dimmed', !shown.has(statuses[el.dataset.lot]));
-  });
-}
+function applyStatusFilter() { applyLotFilters(); }
 
 function updateStats() {
   const vals = Object.values(statuses);

@@ -22,7 +22,7 @@
   stroke: #231f20;
   stroke-width: 1.2;
   pointer-events: none;
-  transition: stroke 0.15s, stroke-width 0.15s;
+  transition: stroke 0.15s, stroke-width 0.15s, opacity 0.25s;
 }
 .lot-stroke.hovered {
   stroke: #231f20;
@@ -42,6 +42,9 @@
 .show-status .lot.selected.reserved  { fill: url(#pat-reserved-sel); }
 */
 .lot.dimmed    { opacity: 0.2; }
+/* A filtered-out lot fades as a whole: outline and number badge go with the fill. */
+.lot-stroke.dimmed      { opacity: 0.2; }
+.lot-label-group.dimmed { opacity: 0.2; }
 
 /* ── Lot labels ────────────────────────────────────────────────────── */
 .lot-label-group { pointer-events: none; }
