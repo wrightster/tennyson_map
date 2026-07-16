@@ -111,21 +111,19 @@
 
   .map-toolbar {
     position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 12px;
+    right: 12px;
     display: flex;
-    gap: 6px;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
     background: rgba(253,250,245,0.94);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: var(--radius-brand);
     box-shadow: 0 2px 12px rgba(13,18,23,0.25), inset 0 0 0 1px rgba(65,77,88,0.18);
-    padding: 5px 8px;
-    gap: 4px;
+    padding: 8px 10px;
     z-index: 10;
-    white-space: nowrap;
   }
   .toolbar-title {
     font-size: 10px;
@@ -133,9 +131,10 @@
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--slate-400);
-    padding-right: 6px;
-    border-right: 1px solid var(--sand-200);
-    margin-right: 2px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--sand-200);
+    margin-bottom: 2px;
+    text-align: center;
   }
   .map-toolbar-sep {
     width: 1px;
@@ -281,7 +280,7 @@
 
   .zoom-controls {
     position: absolute;
-    bottom: 20px;
+    top: 20px;
     left: 16px;
     display: flex;
     flex-direction: column;
@@ -866,7 +865,7 @@
   #builder-legend {
     display: none;
     position: absolute;
-    top: 12px;
+    bottom: 12px;
     left: 12px;
     background: rgba(253,250,245,0.94);
     backdrop-filter: blur(8px);
@@ -875,12 +874,12 @@
     box-shadow: 0 2px 10px rgba(13,18,23,0.2), inset 0 0 0 1px rgba(65,77,88,0.18);
     padding: 10px 14px;
     z-index: 10;
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 16px;
     font-size: 12px;
     color: var(--slate-500);
     letter-spacing: 0.3px;
-    min-width: 140px;
   }
   .legend-title {
     font-size: 10px;
@@ -899,33 +898,14 @@
   }
   .legend-overlay-item:hover { color: var(--slate-600); }
   .legend-overlay-item input[type=checkbox] { cursor: pointer; accent-color: var(--slate-600); }
-  #builder-list {
+  #builder-list, #status-list {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    overflow: hidden;
-    max-height: 0;
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-  }
-  #builder-list.open {
-    max-height: 300px;
-    margin-top: 0;
-    padding-top: 0;
   }
   #status-list {
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-  }
-  #status-list.open {
-    display: flex;
-    padding-top: 6px;
-    margin-top: 3px;
-  }
-  #builder-list.open + #status-list.open {
-    border-top: 1px solid var(--sand-200);
+    border-left: 1px solid var(--sand-200);
+    padding-left: 14px;
   }
   .status-swatch { display:inline-block; width:12px; height:12px; border-radius:2px; border:1px solid #aaa; vertical-align:middle; flex-shrink:0; }
   .available-swatch { background: #cce8c2; border-color: #8a9e72; }
@@ -1008,7 +988,7 @@
 /* JWRG Watermark */
   .jwrg-watermark {
     position: absolute;
-    bottom: 24px;
+    top: 24px;
     right: 20px;
     z-index: 5;
     pointer-events: none;
@@ -1043,20 +1023,17 @@
     header .meta { font-size: 11px; }
 
     .map-toolbar {
-      top: 8px;
+      bottom: 8px;
+      right: 8px;
       gap: 4px;
-      padding: 5px 8px;
-      max-width: calc(100vw - 16px);
-      flex-wrap: wrap;
-      justify-content: center;
-      border-radius: var(--radius-brand);
+      padding: 6px 8px;
     }
     .btn {
       padding: 6px 10px;
       font-size: 11px;
     }
     #builder-legend {
-      top: 8px;
+      bottom: 8px;
       left: 8px;
       font-size: 11px;
       padding: 8px 10px;
@@ -1100,7 +1077,7 @@
       margin: 0 auto 12px;
     }
 
-    .zoom-controls { bottom: 14px; left: 10px; }
+    .zoom-controls { top: 14px; left: 10px; }
     .zoom-btn { width: 44px; height: 44px; font-size: 22px; }
     .zoom-lbl { display: none; }
 
@@ -1119,7 +1096,7 @@
       justify-content: center;
     }
 
-    .jwrg-watermark { width: 80px; bottom: 16px; right: 12px; }
+    .jwrg-watermark { width: 80px; top: 16px; right: 12px; }
   }
 
   #map-svg-container {
@@ -1358,8 +1335,6 @@
   <div class="map-wrap" id="map-wrap">
     <div class="map-toolbar">
       <span class="toolbar-title">Overlays</span>
-      <button class="btn active" id="btn-ov-status"   onclick="toggleLotStatusOverlay()">Lot Status</button>
-      <button class="btn"        id="btn-ov-builders"  onclick="toggleBuilderOverlay()">Builders</button>
       <button class="btn"        id="btn-ov-plat"      onclick="togglePlatOverlay()">Plat</button>
       <button class="btn"        id="btn-ov-topo"      onclick="toggleTopoOverlay()">Topo</button>
       <button class="btn"        id="btn-ov-easements" onclick="toggleEasementOverlay()">Easements</button>
@@ -1590,7 +1565,7 @@ const IS_EMBED = document.documentElement.classList.contains('embed');
 const TENNYSON_LOT_BASE = 'https://tennyson.jwrgnc.com/lots/';
 
 let LOT_DATA = [], BUILDER_DATA = [], builderByLot = {}, statuses = {};
-let builderView = false;
+let builderView = true;
 let lotStatusOverlay = true;
 let easementsVisible = false;
 let selectedId = null, currentFilter = 'all';
@@ -1721,7 +1696,7 @@ function populateLabels(rows) {
       const acresEl = document.createElementNS(ns, 'text');
       acresEl.classList.add('lot-label-acres');
       acresEl.setAttribute('x', '0');
-      acresEl.setAttribute('y', '8');
+      acresEl.setAttribute('y', '22');
       g.appendChild(acresEl);
       labelsG.appendChild(g);
     }
@@ -1734,7 +1709,7 @@ function populateLabels(rows) {
       badge.classList.add('lot-label-badge');
       badge.setAttribute('cx', '0');
       badge.setAttribute('cy', '-8');
-      badge.setAttribute('r', '12');
+      badge.setAttribute('r', '18');
       g.insertBefore(badge, g.firstChild);
     }
     let soldEl = g.querySelector('.lot-label-sold');
@@ -1742,13 +1717,13 @@ function populateLabels(rows) {
       soldEl = document.createElementNS(ns, 'text');
       soldEl.classList.add('lot-label-sold');
       soldEl.setAttribute('x', '0');
-      soldEl.setAttribute('y', '-27');
+      soldEl.setAttribute('y', '-33');
       g.appendChild(soldEl);
     }
     if (numEl) numEl.textContent = row.lot_number;
     if (acresEl) {
-      acresEl.setAttribute('y', '10');   /* clear the r=12 badge ring */
-      acresEl.textContent = (+row.acres).toFixed(4) + ' AC';
+      acresEl.setAttribute('y', '22');   /* clear the r=18 badge ring */
+      acresEl.textContent = (+row.acres).toFixed(2) + ' AC';
     }
     soldEl.textContent = (statuses[row.lot_id] || row.status) === 'sold' ? 'SOLD' : '';
   });
@@ -1757,7 +1732,10 @@ function populateLabels(rows) {
 // Sync the red SOLD mark in a lot's label group with its current status
 function updateSoldLabel(id) {
   const g = document.querySelector(`.lot-label-group[data-lot-id="${id}"]`);
-  const t = g && g.querySelector('.lot-label-sold');
+  if (!g) return;
+  g.classList.remove('available','sold','reserved');
+  g.classList.add(statuses[id] || 'available');
+  const t = g.querySelector('.lot-label-sold');
   if (t) t.textContent = statuses[id] === 'sold' ? 'SOLD' : '';
 }
 
@@ -1800,6 +1778,10 @@ async function loadResources() {
   document.getElementById('map-styles').textContent = cssText;
   container.innerHTML = svgText;
   container.classList.add('show-status');
+  // Easements default off, but the SVG ships #easement-overlay visible — sync it
+  // to the toggle state on load so it stays hidden until toggled on.
+  const _esmtOverlay = document.getElementById('easement-overlay');
+  if (_esmtOverlay) _esmtOverlay.style.display = easementsVisible ? '' : 'none';
   _lastRows = parseCSV(csvText);
   rebuildFromCSV(_lastRows);
   _restoreSavedState();     // load saved labelOffsets before populateLabels uses them
@@ -1807,8 +1789,11 @@ async function loadResources() {
   rebuildBuilderLegend();
   rebuildStatusLegend();
   LOT_DATA.forEach(lot => {
+    const st = statuses[lot.id] || 'available';
     const el = document.getElementById('lot-' + lot.id);
-    if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(statuses[lot.id] || 'available'); }
+    if (el) { el.classList.remove('available','sold','reserved'); el.classList.add(st); }
+    const lg = document.querySelector(`.lot-label-group[data-lot-id="${lot.id}"]`);
+    if (lg) { lg.classList.remove('available','sold','reserved'); lg.classList.add(st); }
   });
   init();
   injectStrokeLayer();
@@ -2059,6 +2044,17 @@ function saveCustomTreeShapes() {
   }).catch(() => {});
 }
 
+// Subtle per-tree color variation — a small palette of greens near the base
+// #4a6b35, picked deterministically from each tree's position (position hash) so
+// the canopy reads as a varied stand rather than one flat fill, and stays stable
+// across reloads. Applied as an inline style on each <use> so it beats the
+// `.tree-layer use { fill }` rule (a presentation attribute would not).
+const TREE_TINTS = ['#4a6b35', '#557a3c', '#405d2c', '#50702f', '#456638'];
+function treeTint(x, y) {
+  const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return TREE_TINTS[Math.floor((s - Math.floor(s)) * TREE_TINTS.length) % TREE_TINTS.length];
+}
+
 function rebuildTreeLayer() {
   const svg = document.getElementById('map-svg');
   if (!svg) return;
@@ -2140,6 +2136,7 @@ function rebuildTreeLayer() {
     u.setAttribute('href', `#tree-symbol-${variant}`);
     u.setAttribute('width', '14');
     u.setAttribute('height', '14');
+    u.style.fill = treeTint(x, y);
     u.setAttribute('transform', `translate(${x.toFixed(2)},${y.toFixed(2)}) scale(${s.toFixed(3)}) translate(-7,-7)`);
     g.appendChild(u);
   });
@@ -2463,8 +2460,11 @@ function init() {
   // Ensure background topo is visible
   const topoEl = document.getElementById('topo-bg');
   if (topoEl) topoEl.style.display = 'block';
-  // Initialize status overlay (on by default)
+  // Initialize status + builder overlays (both on by default)
   document.getElementById('status-list').classList.add('open');
+  document.getElementById('builder-list').classList.add('open');
+  applyBuilderColors();
+  applyBuilderFilter();
   syncLegendPanelVisibility();
   restoreFromURL();
 }
@@ -2689,10 +2689,6 @@ function resetView() {
   zoomTo(1.2009865115336706, -99.12704415773533, -109.15939821558845);
   // Reset status filter to "All"
   setFilter('all');
-  // Turn on status overlay if off
-  if (!lotStatusOverlay) toggleLotStatusOverlay();
-  // Turn off builders
-  if (builderView) toggleBuilderOverlay();
   // Turn off plat overlay
   if (platVisible) togglePlatOverlay();
   // Hide topo overlay
@@ -2716,11 +2712,9 @@ function pushURLState() {
   const params = new URLSearchParams();
   if (selectedId) params.set('lot', selectedId);
   if (currentFilter !== 'all') params.set('filter', currentFilter);
-  if (!lotStatusOverlay) params.set('status', '0');
   if (platVisible) params.set('plat', '1');
   if (topoFg) params.set('topo', '1');
   if (easementsVisible) params.set('easements', '1');
-  if (builderView) params.set('builders', '1');
   const str = params.toString();
   history.replaceState(null, '', str ? '#' + str : location.pathname + location.search);
 }
@@ -2733,11 +2727,9 @@ function restoreFromURL() {
   if (filter && ['available','sold','reserved'].includes(filter)) setFilter(filter);
   const lot = params.get('lot');
   if (lot && document.getElementById('lot-' + lot)) selectLot(lot);
-  if (params.get('status') === '0') toggleLotStatusOverlay();
   if (params.get('plat') === '1') togglePlatOverlay();
   if (params.get('topo') === '1') toggleTopoOverlay();
   if (params.get('easements') === '1') toggleEasementOverlay();
-  if (params.get('builders') === '1') toggleBuilderOverlay();
 }
 
 function isMobile() { return window.innerWidth <= 768; }
@@ -4433,6 +4425,9 @@ const EXPORT_CSS_BW = [
   ".lot-label-num{fill:#000000;paint-order:stroke fill;stroke:#ffffff;stroke-width:3;stroke-linejoin:round;filter:url(#export-label-shadow)}",
   ".lot-label-acres{fill:#000000;paint-order:stroke fill;stroke:#ffffff;stroke-width:2;stroke-linejoin:round;filter:url(#export-label-shadow)}",
   ".lot-label-badge{fill:none;stroke:#000000}",
+  ".lot-label-group.available .lot-label-badge{fill:#cce8c2;stroke:#8a9e72}",
+  ".lot-label-group.sold .lot-label-badge{fill:#e8c2c2;stroke:#c08080}",
+  ".lot-label-group.reserved .lot-label-badge{fill:#f5e8b0;stroke:#d4b84a}",
   ".lot-label-sold{fill:#000000}",
   ".stream-tob{stroke:#000000}",
   ".stream-buffer{stroke:#000000}",
